@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · India Golf Carnival</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#26422B;--ink:#2A3A2C;--muted:#566559;--olive:#5A704C;--gold:#B8921F;--sage:#D6E3CF;--sage-2:#E9F0E4;--mist:#F7FAF5;--line:#DCE4D6;--serif:'Lora',Georgia,serif;--sans:'Inter',system-ui,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);min-height:100vh;display:grid;place-items:center;padding:22px;background:#cfe0ea url(frames/f240.webp) center/cover no-repeat;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;background:linear-gradient(135deg,rgba(247,250,245,.93),rgba(247,250,245,.72) 50%,rgba(214,227,207,.4))}
+.card{position:relative;width:min(100%,440px);background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(38,66,43,.14);padding:clamp(22px,6vw,36px)}
+.back{position:absolute;top:16px;right:18px;font-size:12px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--forest)}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+h1{font-family:var(--serif);font-weight:500;color:var(--forest);font-size:32px;margin:8px 0 0}
+.rule{width:56px;height:3px;background:var(--gold);border-radius:2px;margin:12px 0 18px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.role{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:12px;text-align:left;cursor:pointer;font:inherit;color:var(--ink);transition:border .15s,background .15s}
+.role b{display:block;font-family:var(--serif);font-weight:500;font-size:17px;color:var(--forest)}
+.role span{font-size:12px;color:var(--muted)}
+.role.on{border-color:var(--forest);background:var(--sage-2);box-shadow:inset 0 0 0 1px var(--forest)}
+form{display:grid;gap:14px}
+label{font-size:12px;font-weight:600;color:var(--muted);display:grid;gap:6px}
+input{font:inherit;border:1px solid var(--line);border-radius:10px;padding:12px 13px;outline:none;color:var(--ink)}
+input:focus{border-color:var(--olive);box-shadow:0 0 0 3px rgba(90,112,76,.15)}
+button.go{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px;background:var(--forest);color:#fff;cursor:pointer;margin-top:4px}
+button.go:hover{background:#1d3522}button.go:disabled{opacity:.6;cursor:wait}
+.msg{min-height:1.4em;font-size:13px;color:#9b2c2c;margin:0}
+.msg.ok{color:var(--olive)}
+.foot{margin-top:18px;font-size:11.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="card">
+  <a class="back" href="index.html">← Home</a>
+  <div class="eyebrow">India Golf Carnival</div>
+  <h1>Sign in</h1>
+  <div class="rule"></div>
+  <div class="roles" role="radiogroup" aria-label="Sign in as">
+    <button type="button" class="role on" data-role="player" role="radio" aria-checked="true"><b>Player</b><span>Enter your score, see the leaderboard</span></button>
+    <button type="button" class="role" data-role="admin" role="radio" aria-checked="false"><b>Admin</b><span>Tournament office: players, handicaps, results</span></button>
+  </div>
+  <form id="f" autocomplete="on">
+    <label>Email address<input id="em" type="email" autocomplete="username" required placeholder="Email address"></label>
+    <label>Password<input id="pw" type="password" autocomplete="current-password" required placeholder="Password"></label>
+    <button class="go" id="go" type="submit">Sign in as player</button>
+    <p class="msg" id="msg" role="status" aria-live="polite"></p>
+  </form>
+  <div class="foot" id="foot">Player logins are issued by the tournament office when you register.</div>
+</main>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.119.0";
+const sb = createClient("https://xivczksxmxarkqbwolth.supabase.co", "sb_publishable_YYIlCqEK71jWCmIIFllLRg_DOaZIK9S",
+  {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
+const $ = s => document.querySelector(s);
+let role = new URLSearchParams(location.search).get("as") === "admin" ? "admin" : "player";
+
+function setRole(r){
+  role = r;
+  document.querySelectorAll(".role").forEach(b => { const on = b.dataset.role === r; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
+  $("#go").textContent = r === "admin" ? "Sign in as admin" : "Sign in as player";
+  $("#foot").textContent = r === "admin" ? "Admin access is limited to the ISL tournament office." : "Player logins are issued by the tournament office when you register.";
+  msg("");
+}
+function msg(t, ok){ $("#msg").textContent = t || ""; $("#msg").classList.toggle("ok", !!ok); }
+document.querySelectorAll(".role").forEach(b => b.addEventListener("click", () => setRole(b.dataset.role)));
+setRole(role);
+
+// where does this account belong?
+async function route(chosen){
+  const { data:me, error } = await sb.rpc("whoami");
+  if(error) throw error;
+  if(chosen === "admin"){
+    if(me.is_staff) return location.replace("app.html");
+    await sb.auth.signOut(); throw new Error("This account doesn't have admin access. Choose Player to sign in.");
+  }
+  if(me.player) return location.replace("play.html");
+  if(me.is_staff){ await sb.auth.signOut(); throw new Error("This is an admin account. Choose Admin to sign in."); }
+  await sb.auth.signOut(); throw new Error("No player registration is linked to this email. Contact the tournament office.");
+}
+
+$("#f").addEventListener("submit", async e => {
+  e.preventDefault(); const b = $("#go"); b.disabled = true; msg("Signing in…", true);
+  try{
+    const { error } = await sb.auth.signInWithPassword({ email: $("#em").value.trim(), password: $("#pw").value });
+    if(error) throw new Error(/invalid/i.test(error.message) ? "Email or password is incorrect." : error.message);
+    $("#pw").value = ""; await route(role);
+  }catch(err){ msg(err.message || "Could not reach the server. Check your connection and try again."); }
+  finally{ b.disabled = false; }
+});
+
+// already signed in? go straight through
+const { data:{ session } } = await sb.auth.getSession();
+if(session){ try{ const { data:me } = await sb.rpc("whoami"); if(me?.is_staff && role === "admin") location.replace("app.html"); else if(me?.player) location.replace("play.html"); else if(me?.is_staff) location.replace("app.html"); }catch(e){} }
+</script>
+</body>
+</html>

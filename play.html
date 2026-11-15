@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My round · India Golf Carnival</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#26422B;--ink:#2A3A2C;--muted:#566559;--olive:#5A704C;--gold:#B8921F;--gold-soft:#F4ECD3;--sage:#D6E3CF;--sage-2:#E9F0E4;--mist:#F7FAF5;--sky:#E7F0F2;--teal:#2F6D80;--line:#DCE4D6;--red:#9b2c2c;--serif:'Lora',Georgia,serif;--sans:'Inter',system-ui,sans-serif;--shadow:0 1px 2px rgba(38,66,43,.06),0 8px 24px rgba(38,66,43,.06)}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:var(--sans);color:var(--ink);background:var(--mist);font-size:14px;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+.hidden{display:none!important}.num{font-variant-numeric:tabular-nums}
+header{position:sticky;top:0;z-index:20;background:rgba(247,250,245,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 16px 0}
+.hrow{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.mark{width:34px;height:34px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;font-family:var(--serif);font-size:12px;flex:none}
+.who b{display:block;font-family:var(--serif);font-weight:500;color:var(--forest);font-size:16px;line-height:1.15}
+.who small{color:var(--muted);font-size:12px}
+.out{margin-left:auto;font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--forest);border-radius:999px;padding:7px 12px;cursor:pointer}
+.tabs{max-width:900px;margin:10px auto 0;display:grid;grid-template-columns:1fr 1fr}
+.tabs a{text-align:center;padding:11px 0;text-decoration:none;color:var(--muted);font-weight:600;border-bottom:3px solid transparent}
+.tabs a.on{color:var(--forest);border-color:var(--gold)}
+main{max-width:900px;margin:0 auto;padding:16px 16px 60px}
+.loading{padding:70px 10px;text-align:center;font-family:var(--serif);color:var(--forest);font-size:18px}
+.banner{border-radius:12px;padding:11px 14px;font-size:13px;margin-bottom:14px;display:flex;gap:8px;align-items:center}
+.banner.open{background:var(--sage-2);color:var(--forest)}
+.banner.closed{background:#f1f3ef;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--olive);flex:none;box-shadow:0 0 0 3px rgba(90,112,76,.2)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat{background:#fff;border-radius:12px;padding:11px 12px;box-shadow:var(--shadow)}
+.stat b{display:block;font-family:var(--serif);font-weight:500;font-size:24px;color:var(--gold);line-height:1.1}
+.stat span{font-size:11px;color:var(--muted)}
+.stat.hl{background:var(--forest)}.stat.hl b{color:#fff}.stat.hl span{color:var(--sage)}
+.hcp{background:var(--sky);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.hcp .v{font-family:var(--serif);font-size:30px;color:var(--teal);min-width:44px;text-align:center}
+.hcp p{margin:0;font-size:12.5px;color:var(--ink)}
+.hcp small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+.lock{font-size:11px;font-weight:700;color:var(--teal);background:#fff;border-radius:999px;padding:3px 9px;margin-left:auto;white-space:nowrap}
+/* scorecard */
+.card{background:#fff;border-radius:14px;box-shadow:var(--shadow);overflow-x:auto}
+.card table{width:100%;border-collapse:collapse}
+.card th{background:var(--forest);color:#fff;font-size:11.5px;font-weight:600;padding:9px 6px;text-align:center}
+.card th:first-child{text-align:left;padding-left:14px}
+.card td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--line);font-size:13px}
+.card td:first-child{text-align:left;padding-left:14px;font-family:var(--serif);font-size:17px;color:var(--forest)}
+.card td.y{color:var(--muted);font-size:12px}
+.card td.y.bk{color:var(--ink);font-weight:600}
+.card td.si{color:var(--muted);font-size:12px}
+.card tr.sub td{background:var(--sage-2);font-weight:700;color:var(--forest);font-size:13px;font-family:var(--sans)}
+.card tr.sub td:first-child{font-size:13px;font-family:var(--sans)}
+.teebk{display:inline-block;width:9px;height:9px;border-radius:50%;background:#1b1b1b;margin-right:4px;vertical-align:middle}
+.teebl{display:inline-block;width:9px;height:9px;border-radius:50%;background:#2b5fb8;margin-right:4px;vertical-align:middle}
+.step{display:inline-flex;align-items:center;gap:4px}
+.step button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;color:var(--forest);font-size:18px;font-weight:600;cursor:pointer;touch-action:manipulation}
+.step button:active{background:var(--sage-2)}
+.step input{width:44px;height:38px;border:1.5px solid var(--line);border-radius:9px;text-align:center;font:inherit;font-size:17px;font-weight:700;color:var(--ink);-moz-appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none}
+.step input:focus{outline:none;border-color:var(--olive);box-shadow:0 0 0 3px rgba(90,112,76,.15)}
+.step input.birdie{border-color:var(--gold);background:var(--gold-soft);border-radius:50%}
+.step input.eagle{border-color:var(--gold);background:var(--gold-soft);border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 4px var(--gold)}
+.step input.bogey{border-color:var(--olive)}
+.step input.dbl{border-color:var(--olive);background:var(--olive);color:#fff}
+.step input:disabled{background:#f6f7f5;color:var(--ink)}
+.st{display:inline-block;width:14px;font-size:12px}
+.st.ok{color:var(--olive)}.st.err{color:var(--red)}
+.tdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle;box-shadow:0 0 0 1px rgba(255,255,255,.5),0 0 0 2px rgba(0,0,0,.12)}
+.teepick{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.teepick>span{font-size:12px;font-weight:600;color:var(--muted);margin-right:2px}
+.teepick button{font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 11px;cursor:pointer}
+.teepick button.on{border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest);background:var(--sage-2)}
+.card td.tc.sel{font-weight:600;color:var(--ink)}
+ .phasebar{display:flex;gap:6px;margin-bottom:12px}
+.phasebar .step{flex:1;text-align:center;font-size:12px;font-weight:600;padding:7px;border-radius:999px;background:#eef1ec;color:var(--muted)}
+.phasebar .step.on{background:var(--forest);color:#fff}
+.hcp.big .v{font-size:44px}
+.empty{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:28px 20px;text-align:center}
+.empty h2{font-family:var(--serif);font-weight:500;color:var(--forest);margin:0 0 6px;font-size:22px}
+.empty p{color:var(--muted);margin:6px 0}
+.empty .go{display:inline-block;margin-top:8px;background:var(--forest);color:#fff;text-decoration:none;font-weight:600;padding:10px 16px;border-radius:999px}
+.how{background:#fff;border-radius:12px;box-shadow:var(--shadow);padding:10px 14px;margin-bottom:12px;font-size:13px}
+.how summary{cursor:pointer;color:var(--forest);font-weight:500}
+.how p{margin:8px 0 0;color:var(--ink);line-height:1.5}
+.card td.res{min-width:62px;text-align:left}
+.card td.res .rn{display:block;font-size:11.5px;font-weight:600;color:var(--olive)}
+.card td.res .pp{display:inline-block;margin-top:2px;font-size:11px;font-weight:700;color:#7a5f10;background:var(--gold-soft);border-radius:999px;padding:1px 7px}
+.st.err{color:var(--red);font-size:11px;font-weight:600}
+.rec{color:var(--teal);font-weight:700;margin-left:1px}
+.rtabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.rtabs button{font:inherit;font-weight:600;font-size:13px;border:1px solid var(--line);background:#fff;color:var(--forest);border-radius:999px;padding:8px 14px;cursor:pointer}
+.rtabs button.on{background:var(--forest);border-color:var(--forest);color:#fff}
+.note{font-size:12px;color:var(--muted);margin:12px 2px}
+/* leaderboard */
+.lbh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:2px 2px 10px}
+.lbh h2{font-family:var(--serif);font-weight:500;color:var(--forest);margin:0;font-size:22px}
+.lbh small{color:var(--muted);font-size:12px}
+.refresh{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--forest);border-radius:999px;padding:6px 11px;cursor:pointer}
+.lb{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.lb th{background:var(--forest);color:#fff;font-size:11.5px;font-weight:600;padding:9px 8px;text-align:right}
+.lb th:nth-child(2),.lb td:nth-child(2){text-align:left}
+.lb td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:right;font-size:13px}
+.lb td.pos{font-family:var(--serif);color:var(--gold);font-size:15px;text-align:left;width:38px}
+.lb td .nm{font-weight:600}
+.lb td .cl{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.lb tr.q td{background:#FBF7EA}
+.lb tr.cut td{border-bottom:2px dashed var(--gold)}
+.lb tr.me td{background:var(--sage)!important}
+.lb tr.me .nm::after{content:" (you)";color:var(--olive);font-weight:500}
+.lb .net{font-weight:700;color:var(--forest)}
+.under{color:#b33a2b}.even{color:var(--ink)}
+.lb tr.ns td{color:var(--muted)}
+.legend{font-size:11.5px;color:var(--muted);margin:10px 2px}
+@media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.card .tc:not(.sel){display:none}.card td.si,.card th:nth-last-child(3){display:none}.card td.res{min-width:52px}.lb th.hide,.lb td.hide{display:none}.card td,.card th{padding-left:3px;padding-right:3px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow"><span class="mark">IGC</span><div class="who"><b id="pname">…</b><small id="pevent"></small></div><button class="out" id="out">Sign out</button></div>
+  <nav class="tabs"><a href="#leaderboard" data-v="leaderboard">Leaderboard</a><a href="#scorecard" data-v="scorecard">My scorecard</a></nav>
+</header>
+<main>
+  <div class="loading" id="loading">Loading your round…</div>
+  <section id="v-leaderboard" class="hidden"></section>
+  <section id="v-scorecard" class="hidden"></section>
+</main>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.119.0";
+import * as G from "./scoring.js";
+const sb = createClient("https://xivczksxmxarkqbwolth.supabase.co", "sb_publishable_YYIlCqEK71jWCmIIFllLRg_DOaZIK9S",
+  {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const d0 = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const range = c => { const a = d0(c.start_date), b = d0(c.end_date); return +a===+b ? `${a.getDate()} ${MON[a.getMonth()]}` : a.getMonth()===b.getMonth() ? `${a.getDate()}–${b.getDate()} ${MON[a.getMonth()]}` : `${a.getDate()} ${MON[a.getMonth()]} – ${b.getDate()} ${MON[b.getMonth()]}`; };
+const key = (r,h) => r + "-" + h;
+
+let hcard = new Map();
+let P = null, city = null, F = null, holes = [], card = new Map(), field = { players: [], cards: new Map(), restricted: false, at: null }, R = 1, TEE = null, timer = null;
+
+async function boot(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session) return location.replace("login.html");
+  const { data:me, error } = await sb.rpc("whoami");
+  if(error || !me?.player){ if(me?.is_staff) return location.replace("app.html"); await sb.auth.signOut(); return location.replace("login.html"); }
+  const pid = me.player.id;
+  const [pr, cr, hr, sr, hc] = await Promise.all([
+    sb.from("participants").select("id,full_name,home_club,handicap_index,playing_handicap,city_id,hcp_mode,s36_handicap").eq("id", pid).single(),
+    sb.from("cities").select("*").eq("id", me.player.city_id).single(),
+    sb.from("holes").select("*").eq("city_id", me.player.city_id).order("hole"),
+    sb.from("hole_scores").select("round,hole,strokes").eq("participant_id", pid),
+    sb.from("hcp_scores").select("hole,strokes").eq("participant_id", pid)
+  ]);
+  hcard = new Map((hc.data || []).map(r => [`1-${r.hole}`, r.strokes]));
+  const err = pr.error || cr.error || hr.error || sr.error;
+  if(err){ $("#loading").textContent = "Couldn't load your round: " + err.message; return; }
+  P = pr.data; city = cr.data; F = G.normaliseFormat(city.format, city);
+  holes = hr.data.filter(h => h.hole <= city.holes_count);
+  card = new Map(sr.data.map(r => [key(r.round, r.hole), r.strokes]));
+  R = 1; while(R < city.rounds_count && holes.every(h => card.get(key(R, h.hole)))) R++;
+  $("#pname").textContent = P.full_name;
+  $("#pevent").textContent = `IGC ${city.name} · ${range(city)} · ${city.venue || ""}`;
+  $("#loading").remove();
+  await loadField();
+  route();
+  timer = setInterval(async () => {
+    if(document.visibilityState !== "visible") return;
+    const { data:c2 } = await sb.from("cities").select("phase,scoring_open,format").eq("id", city.id).single();
+    const changed = c2 && (c2.phase !== city.phase || c2.scoring_open !== city.scoring_open);
+    if(c2){ city.phase = c2.phase; city.scoring_open = c2.scoring_open; city.format = c2.format; F = G.normaliseFormat(city.format, city); }
+    await loadField();
+    if(changed){ route(); return; }
+    if(location.hash.slice(1) !== "scorecard") renderLeaderboard();
+  }, 30000);
+}
+async function loadField(){
+  const { data, error } = await sb.rpc("event_cards", { p_city: city.id });
+  if(error){ console.error(error); return; }
+  const cards = new Map();
+  (data.scores || []).forEach(([pid, r, h, st]) => { if(!cards.has(pid)) cards.set(pid, new Map()); cards.get(pid).set(key(r, h), st); });
+  field = { players: data.players || [], cards, restricted: data.restricted, at: new Date() };
+}
+const course = () => holes.map(h => ({ hole: h.hole, par: h.par, stroke_index: h.stroke_index }));
+const eff = () => P.hcp_mode === "super36" ? P.s36_handicap : P.playing_handicap;
+const Pg = () => ({ ...P, playing_handicap: eff() });
+const mine = () => G.scorePlayer(F, course(), city.rounds_count, card, Pg());
+const isHcpPhase = () => (city.phase || "handicap") === "handicap";
+const s36F = () => G.normaliseFormat({ ...F, handicap: "system36", scoring: "stroke", basis: "gross", allowance: 100, hcp_max: 99, max_score: "none" });
+
+/* ---------- scorecard ---------- */
+function cls(s, par){ if(!s) return ""; const d = s - par; return d <= -2 ? "eagle" : d === -1 ? "birdie" : d === 0 ? "" : d === 1 ? "bogey" : "dbl"; }
+function hcpCard(sc){
+  const rd = sc.rounds[R-1], n = holes.length;
+  if(F.handicap === "admin") return { v: eff() == null ? "–" : rd.hcp, title: "Your handicap for this game", sub: `${P.hcp_mode === "super36" ? `From your Super 36 handicap round (${P.s36_handicap ?? "pending"})` : "Approved by the tournament office"}${F.allowance!==100?` · ${F.allowance}% allowance applied`:""}${city.rounds_count>1?` · per round`:""}.`, lock: "🔒 Locked" };
+  if(F.handicap === "system36"){ const base = Math.round((F.s36_base ?? 36) * n / 18), t = F.s36;
+    return { v: rd.played ? (rd.hcpKnown ? rd.hcp : "~" + rd.hcp) : base, title: rd.hcpKnown ? "Your Super 36 handicap" : "Super 36 handicap (so far)", sub: `Starts at ${base}. Points: birdie ${t.birdie}, par ${t.par}, bogey ${t.bogey}, double+ ${t.double}${t.eagle!==t.birdie?`, eagle ${t.eagle}`:""}. Handicap = ${base} − points. ${rd.hcpKnown ? "Final for this round." : "Estimate until the round is complete."}`, lock: "Auto" }; }
+  if(F.handicap === "peoria") return { v: rd.hcpKnown ? rd.hcp : "?", title: "Peoria handicap", sub: "Worked out from hidden holes when the round is complete.", lock: "Hidden holes" };
+  return { v: 0, title: "Scratch event", sub: "No handicap strokes in this event.", lock: "Gross" };
+}
+function renderScorecard(){
+  if(isHcpPhase() && P.hcp_mode !== "super36") return renderSetHandicap();
+  const HC = isHcpPhase();                       // Super 36 handicap round
+  const FN = HC ? s36F() : F;
+  if(HC) R = 1;
+  const open = city.scoring_open && (HC ? true : !isHcpPhase());
+  const sc = HC ? G.scorePlayer(FN, course(), 1, hcard, {}) : mine(), rd = sc.rounds[R-1], hc = HC ? s36Box(rd) : hcpCard(sc);
+  const tees = (Array.isArray(city.tees) && city.tees.length) ? city.tees : [{key:"black",name:"Black",color:"#1b1b1b"},{key:"blue",name:"Blue",color:"#2b5fb8"}];
+  if(!TEE || !tees.some(t => t.key === TEE)){ try{ TEE = localStorage.getItem("igc.tee." + city.id); }catch(e){} if(!tees.some(t => t.key === TEE)) TEE = tees[0].key; }
+  const yd = (h, k) => { const y = h.yards && Object.keys(h.yards).length ? h.yards : {black:h.black_yards, blue:h.blue_yards}; return y[k]; };
+  const tcls = t => `tc ${t.key === TEE ? "sel" : ""}`;
+  const showPts = HC || FN.scoring !== "stroke";
+  const ptsHead = HC ? "S36 pts" : FN.scoring === "stroke" ? "Pts" : FN.scoring === "parbogey" ? "+/−" : "Pts";
+  const ptsOf = x => !x.strokes ? "" : HC ? x.s36 : x.metric;
+  const nine = (from, to, label) => {
+    const hs = holes.filter(h => h.hole >= from && h.hole <= to);
+    const xs = rd.holes.filter(x => x.hole >= from && x.hole <= to);
+    const sum = f => hs.reduce((n,h) => n + (+f(h) || 0), 0);
+    const strokes = xs.reduce((n,x) => n + (x.strokes || 0), 0);
+    return hs.map(h => { const x = rd.holes.find(y => y.hole === h.hole), s = x.strokes;
+      return `<tr data-h="${h.hole}"><td>${h.hole}${x.rec>0?`<sup class="rec" title="${x.rec} handicap stroke${x.rec>1?"s":""}">${"•".repeat(Math.min(x.rec,3))}</sup>`:""}</td>${tees.map(t => `<td class="y num ${tcls(t)}">${yd(h, t.key) ?? "–"}</td>`).join("")}<td class="num">${h.par}</td><td class="si num">${h.stroke_index}</td>
+        <td><span class="step"><button type="button" data-d="-1" aria-label="One fewer stroke on hole ${h.hole}" ${open?"":"disabled"}>−</button><input type="number" inputmode="numeric" min="1" max="15" value="${s ?? ""}" class="${cls(s,h.par)}" aria-label="Strokes on hole ${h.hole}" ${open?"":"disabled"}><button type="button" data-d="1" aria-label="One more stroke on hole ${h.hole}" ${open?"":"disabled"}>+</button></span></td>
+        <td class="res">${s ? `<span class="rn">${x.result}</span>${showPts?`<span class="pp">${ptsOf(x)}</span>`:""}` : `<span class="st"></span>`}</td></tr>`; }).join("")
+      + `<tr class="sub"><td>${label}</td>${tees.map(t => `<td class="num ${tcls(t)}">${sum(h => yd(h, t.key)) || "–"}</td>`).join("")}<td class="num">${sum(h=>h.par)}</td><td class="si"></td><td class="num">${strokes || "–"}</td><td class="num">${showPts ? xs.reduce((n,x)=>n+(+ptsOf(x)||0),0) : ""}</td></tr>`;
+  };
+  const body = holes.length > 9 ? nine(1, 9, "Out") + nine(10, holes.length, "In") : nine(1, holes.length, "Total");
+  const roundTabs = !HC && city.rounds_count > 1 ? `<div class="rtabs">${sc.rounds.map(x => `<button type="button" data-r="${x.round}" class="${x.round===R?"on":""}">Round ${x.round}${x.played===holes.length?" ✓":x.played?` · ${x.played}/${holes.length}`:""}</button>`).join("")}</div>` : "";
+  $("#v-scorecard").innerHTML = `
+    ${HC ? `<div class="phasebar"><span class="step on">1 · Handicap round</span><span class="step">2 · Full game</span></div>
+    <div class="banner ${open?"open":"closed"}">${open ? '<span class="dot"></span> <span><b>Super 36 handicap round.</b> This card sets your handicap for the full game. Each hole saves instantly.</span>' : "Handicap entry is closed. Your card is read-only."}</div>`
+    : `<div class="banner ${open?"open":"closed"}">${open ? '<span class="dot"></span> Full game is open. Tap − / + or type your strokes; each hole saves instantly.' : "Scoring is closed for this event. Your card is read-only."}</div>`}
+    <details class="how"><summary>How ${HC ? "your Super 36 handicap is worked out" : "this event is scored"} · <b>${HC ? "Super 36" : esc(G.LABELS.scoring[FN.scoring])}</b></summary>${(HC ? G.explain(F, holes.length, 1).filter(t => t.includes("Super 36")) : G.explain(FN, holes.length, city.rounds_count)).map(t => `<p>${t}</p>`).join("")}</details>
+    <div class="hcp"><div class="v num">${hc.v}</div><p><b>${hc.title}</b><small>${hc.sub}</small></p><span class="lock">${hc.lock}</span></div>
+    ${roundTabs}
+    <div class="stats" id="stats"></div>
+    ${tees.length > 1 ? `<div class="teepick"><span>Your tee</span>${tees.map(t => `<button type="button" data-t="${t.key}" class="${t.key===TEE?"on":""}"><span class="tdot" style="background:${t.color}"></span>${esc(t.name)}</button>`).join("")}</div>` : ""}
+    <div class="card"><table>
+      <thead><tr><th>Hole</th>${tees.map(t => `<th class="${tcls(t)}"><span class="tdot" style="background:${t.color}"></span>${esc(t.name)}</th>`).join("")}<th>Par</th><th>Idx</th><th>Your score</th><th>${showPts ? ptsHead : ""}</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table></div>
+    <p class="note">${!HC&&FN.basis==="net"&&FN.handicap!=="none"?'<span class="rec">•</span> = handicap stroke you receive on that hole. ':""}Idx is the hole's stroke index (1 = hardest).${tees.length>1?" On a phone only your selected tee's yards are shown.":""}</p>`;
+  renderStats(sc, FN, HC);
+  $("#v-scorecard").querySelectorAll(".teepick button").forEach(b => b.addEventListener("click", () => { TEE = b.dataset.t; try{ localStorage.setItem("igc.tee." + city.id, TEE); }catch(e){} renderScorecard(); }));
+  $("#v-scorecard").querySelectorAll(".rtabs button").forEach(b => b.addEventListener("click", () => { R = +b.dataset.r; renderScorecard(); }));
+  if(!open) return;
+  $("#v-scorecard").querySelectorAll("tr[data-h]").forEach(tr => {
+    const h = +tr.dataset.h, inp = tr.querySelector("input"), par = holes.find(x => x.hole === h).par;
+    tr.querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+      const v = inp.value ? Math.min(15, Math.max(1, +inp.value + +b.dataset.d)) : par;   // first tap starts at par
+      inp.value = v; save(h, v, tr, HC);
+    }));
+    inp.addEventListener("change", () => { const v = inp.value === "" ? null : Math.min(15, Math.max(1, Math.round(+inp.value))); if(v) inp.value = v; save(h, v, tr, HC); });
+  });
+}
+function s36Box(rd){
+  const base = Math.round((F.s36_base ?? 36) * holes.length / 18), t = F.s36;
+  return { v: rd.played ? (rd.hcpKnown ? rd.hcp : "~" + rd.hcp) : base, title: rd.hcpKnown ? "Your Super 36 handicap" : "Super 36 handicap (so far)",
+    sub: `Starts at ${base}. Points: birdie ${t.birdie}, par ${t.par}, bogey ${t.bogey}, double+ ${t.double}${t.eagle!==t.birdie?`, eagle ${t.eagle}`:""}. ${rd.hcpKnown ? "Complete. This is your handicap for the full game." : "Final once all holes are in."}`, lock: rd.hcpKnown ? "🔒 Locked" : "Auto" };
+}
+function renderSetHandicap(){
+  const h = P.playing_handicap;
+  $("#v-scorecard").innerHTML = `
+    <div class="phasebar"><span class="step on">1 · Handicap round</span><span class="step">2 · Full game</span></div>
+    <div class="hcp big"><div class="v num">${h ?? "–"}</div><p><b>${h != null ? "Your approved handicap" : "Handicap to be confirmed"}</b>
+      <small>${h != null ? "Set by the tournament office. You don't need to play a handicap round." : "The tournament office hasn't entered your handicap yet."}</small></p><span class="lock">🔒 Set by admin</span></div>
+    <div class="banner closed">The full-game scorecard opens when the organiser starts the game. Pull down or come back here to check.</div>
+    <details class="how" open><summary>How this event is scored · <b>${esc(G.LABELS.scoring[F.scoring])}</b></summary>${G.explain(F, holes.length, city.rounds_count).map(t => `<p>${t}</p>`).join("")}</details>`;
+}
+function renderStats(sc, FN = F, HC = false){
+  const rd = sc.rounds[R-1], multi = !HC && city.rounds_count > 1, n = holes.length;
+  const tp = v => v === 0 ? "E" : v > 0 ? `+${v}` : `${v}`;
+  $("#stats").innerHTML = `<div class="stat"><b class="num">${rd.played}/${n}</b><span>${multi ? `Round ${R} holes` : "Holes played"}</span></div>
+    <div class="stat"><b class="num">${rd.played ? rd.gross : "–"}</b><span>${multi ? `Round ${R} gross` : "Gross"}</span></div>
+    <div class="stat"><b class="num">${rd.played ? tp(rd.toPar) : "–"}</b><span>${multi ? `Round ${R} to par` : "To par"}</span></div>
+    ${HC ? `<div class="stat hl"><b class="num">${rd.holes.reduce((t,x)=>t+(x.strokes?x.s36:0),0)}</b><span>Super 36 points</span></div>` : `<div class="stat hl"><b class="num">${G.fmtMetric(FN, sc)}</b><span>${esc(G.metricLabel(FN))}${multi ? " · all rounds" : ""}</span></div>`}`;
+}
+const pending = new Map();
+function save(h, v, tr, HC = false){
+  const inp = tr.querySelector("input"), par = holes.find(x => x.hole === h).par, res = tr.querySelector(".res");
+  inp.className = cls(v, par); res.innerHTML = '<span class="st">…</span>';
+  clearTimeout(pending.get(h));
+  const r = R;
+  pending.set(h, setTimeout(async () => {
+    const q = HC
+      ? (v ? sb.from("hcp_scores").upsert({ participant_id: P.id, hole: h, strokes: v }) : sb.from("hcp_scores").delete().eq("participant_id", P.id).eq("hole", h))
+      : (v ? sb.from("hole_scores").upsert({ participant_id: P.id, round: r, hole: h, strokes: v }) : sb.from("hole_scores").delete().eq("participant_id", P.id).eq("round", r).eq("hole", h));
+    const { error } = await q;
+    if(error){ res.innerHTML = `<span class="st err" title="${esc(error.message)}">Not saved – retry</span>`; return; }
+    const target = HC ? hcard : card;
+    if(v) target.set(key(HC ? 1 : r, h), v); else target.delete(key(HC ? 1 : r, h));
+    if(HC){ const sc = G.scorePlayer(s36F(), course(), 1, hcard, {}); P.s36_handicap = sc.rounds[0].hcpKnown ? sc.rounds[0].hcp : null; }
+    if(r === R){ const y = document.activeElement; const keepFocus = y && y.closest && y.closest("tr")?.dataset.h; renderScorecard(); if(keepFocus){ const el = $(`tr[data-h="${keepFocus}"] input`); if(el && y.tagName === "INPUT") el.focus(); } }
+    loadField();
+  }, 300));
+}
+
+/* ---------- leaderboard ---------- */
+function renderLeaderboard(){
+  if(isHcpPhase()){
+    $("#v-leaderboard").innerHTML = `<div class="phasebar"><span class="step on">1 · Handicap round</span><span class="step">2 · Full game</span></div>
+      <div class="empty"><h2>Leaderboard opens with the full game</h2><p>The handicap round is in progress. Once every player has a handicap, the organiser starts the full game and the live leaderboard appears here.</p>
+      <p><a href="#scorecard" class="go">${P.hcp_mode === "super36" ? (P.s36_handicap != null ? `Your Super 36 handicap: ${P.s36_handicap} ✓` : "Enter your Super 36 handicap card →") : `Your handicap: ${P.playing_handicap ?? "to be confirmed"}`}</a></p></div>`;
+    return;
+  }
+  const t = field.at, hhmm = t ? `${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}` : "";
+  const players = field.players.length ? field.players : [{ ...P, is_me: true }];
+  const rows = G.leaderboard(F, course(), city.rounds_count, players, field.cards);
+  const started = rows.filter(r => r.sc.played), done = rows.filter(r => r.sc.complete);
+  const net = F.scoring === "stroke" && F.basis === "net" && F.handicap !== "none";
+  $("#v-leaderboard").innerHTML = `
+    <div class="lbh"><div><h2>IGC ${esc(city.name)} leaderboard</h2><small>${esc(G.LABELS.scoring[F.scoring])} · ${city.rounds_count} round${city.rounds_count>1?"s":""} × ${holes.length} holes · ${started.length} of ${rows.length} on the card · updated ${hhmm}</small></div><button class="refresh" id="rf">Refresh</button></div>
+    ${field.restricted ? `<div class="banner closed">The organisers have hidden the full leaderboard ${F.lb_visibility==="final"?"until the event is completed":"for this event"}. You can still see your own position below.</div>` : ""}
+    <table class="lb"><thead><tr><th style="text-align:left">Pos</th><th>Player</th><th class="hide">HCP</th><th>Thru</th><th class="hide">Gross</th><th>${esc(G.metricLabel(F))}</th></tr></thead><tbody>
+    ${rows.map((r,i) => { const q = !field.restricted && r.sc.complete && done.indexOf(r) > -1 && done.indexOf(r) < F.qualifiers;
+      return `<tr class="${q?"q":""} ${r.is_me?"me":""} ${r.sc.played?"":"ns"}"><td class="pos num">${r.pos ? (r.tie?"T":"") + r.pos : "–"}</td><td><span class="nm">${esc(r.full_name)}</span><span class="cl">${esc(r.home_club)}</span></td>
+      <td class="hide num">${F.handicap==="none"?0:r.sc.played?(r.sc.hcpKnown?r.sc.hcp:"~"+r.sc.hcp):(F.handicap==="admin"?(r.playing_handicap??"–"):"–")}</td><td class="num">${r.sc.complete?"F":r.sc.played?(city.rounds_count>1?`${r.sc.played}/${r.sc.total}`:r.sc.played):"–"}</td><td class="hide num">${r.sc.played?r.sc.gross:"–"}</td><td class="num net">${G.fmtMetric(F, r.sc)}</td></tr>`; }).join("")}
+    </tbody></table>
+    <p class="legend">${F.scoring==="stroke" ? (net ? "Ranked on net to par for the holes played." : "Ranked on strokes to par for the holes played.") : "Ranked on points for the holes played."} Thru F = finished. ~ = handicap still being worked out. ${field.restricted?"":`Shaded: top ${F.qualifiers} finished cards (Almaty qualifiers).`} Updates every 30 seconds.</p>`;
+  $("#rf").addEventListener("click", async () => { await loadField(); renderLeaderboard(); });
+}
+
+/* ---------- routing ---------- */
+function route(){
+  if(!city) return;
+  const v = location.hash.slice(1) === "scorecard" ? "scorecard" : "leaderboard";
+  ["leaderboard","scorecard"].forEach(x => $("#v-"+x).classList.toggle("hidden", x !== v));
+  document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("on", a.dataset.v === v));
+  document.querySelector('.tabs a[data-v="scorecard"]').textContent = isHcpPhase() ? "My handicap" : "My scorecard";
+  v === "scorecard" ? renderScorecard() : renderLeaderboard();
+}
+addEventListener("hashchange", route);
+$("#out").addEventListener("click", async () => { clearInterval(timer); await sb.auth.signOut(); location.replace("login.html"); });
+sb.auth.onAuthStateChange(ev => { if(ev === "SIGNED_OUT") location.replace("login.html"); });
+boot();
+</script>
+</body>
+</html>
