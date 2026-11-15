@@ -40,6 +40,19 @@ Set per event in **Event setup → Competition format**:
 - Players see a plain-English "How this event is scored" card, their handicap (locked or auto-calculated), and for each hole the result (Birdie, Par, Bogey) plus points or Super 36 points.
 - **CSV export** (Scores tab): one event or all events. Includes position, contact details, handicap, format, totals and every hole of every round. Opens in Excel or Google Sheets.
 
+## Handicap round → Full game
+- **Event phase** (Event setup, top): **1 · Handicap round**, then **2 · Full game**. The full-game scorecard stays locked until the admin switches to Full game. That switch is blocked until every player has a handicap, and the panel lists who is still missing one.
+- **Player handicaps** (full-width list): for each player choose **Set number** (admin enters the approved handicap) or **Super 36** (the player fills in a Super 36 handicap-round card on their phone, and the result appears in the list automatically; click **View card** to see it). Bulk buttons switch everyone at once.
+- Super 36 handicap = start value − points from the handicap-round card, using the event's own points table. Calculated in the database (`hcp_scores` → `participants.s36_handicap`).
+- In the full game each player sees their locked handicap (approved number or Super 36 result), the same value as in the admin list.
+
+## Installable app (PWA)
+- `manifest.webmanifest`, `sw.js`, `pwa.js` and `icons/` make the site installable as **IGC Golf**: its own icon, full screen, no browser bar.
+- **Players:** scan the QR (admin: Event setup → **Player app QR code**, printable), sign in, then on iPhone tap Safari **Share → Add to Home Screen**, or on Android tap **Install app**. An install hint appears automatically on phones.
+- **Weak signal on the course:** holes entered offline are saved on the phone and sync automatically when the connection returns (a gold "saved on this phone" pill shows meanwhile). The app shell also opens offline.
+- **Needs HTTPS to install on phones.** Localhost works only on your own computer. To use it with players, host the folder (Netlify drop, Vercel or GitHub Pages; all give HTTPS) and print the QR from the hosted site.
+- After changing files, bump `VERSION` in `sw.js` so installed apps pick up the update.
+
 ## 3. Updating data
 Use **Table Editor** in Supabase:
 - **Opening a city:** set its `registration_status` to `open`, then add players to `participants` with that `city_id`. Set it to `closed` when entries close.

@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>My round · India Golf Carnival</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#26422B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="IGC Golf">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<script src="pwa.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
@@ -70,7 +79,10 @@ main{max-width:900px;margin:0 auto;padding:16px 16px 60px}
 .teepick button{font:inherit;font-size:12.5px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:6px 11px;cursor:pointer}
 .teepick button.on{border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest);background:var(--sage-2)}
 .card td.tc.sel{font-weight:600;color:var(--ink)}
- .phasebar{display:flex;gap:6px;margin-bottom:12px}
+ #syncPill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:70;background:#7a5f10;color:#fff;font-size:12px;font-weight:600;border-radius:999px;padding:8px 14px;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none;white-space:nowrap}
+#syncPill.on{display:block}
+@media (display-mode: standalone){header{padding-top:calc(14px + env(safe-area-inset-top))}}
+.phasebar{display:flex;gap:6px;margin-bottom:12px}
 .phasebar .step{flex:1;text-align:center;font-size:12px;font-weight:600;padding:7px;border-radius:999px;background:#eef1ec;color:var(--muted)}
 .phasebar .step.on{background:var(--forest);color:#fff}
 .hcp.big .v{font-size:44px}
@@ -111,12 +123,70 @@ main{max-width:900px;margin:0 auto;padding:16px 16px 60px}
 .lb tr.ns td{color:var(--muted)}
 .legend{font-size:11.5px;color:var(--muted);margin:10px 2px}
 @media (max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.card .tc:not(.sel){display:none}.card td.si,.card th:nth-last-child(3){display:none}.card td.res{min-width:52px}.lb th.hide,.lb td.hide{display:none}.card td,.card th{padding-left:3px;padding-right:3px}}
+
+/* ===== Clean app look: flat surfaces, crisp edges, native-style controls ===== */
+:root{--r:8px;--bd:#D9E0D4;--bg:#F3F5F1}
+body{background:var(--bg)}
+header{background:#fff;border-bottom:1px solid var(--bd);backdrop-filter:none}
+.mark{border-radius:8px;width:32px;height:32px}
+.who b{font-family:var(--sans);font-weight:700;font-size:15px;letter-spacing:-.01em}
+.out{border-radius:8px;border:1px solid var(--bd);padding:8px 12px;background:#fff}
+.tabs a{display:flex;align-items:center;justify-content:center;gap:8px}
+.tabs svg{width:18px;height:18px}
+.banner{border-radius:var(--r);border-left:4px solid var(--olive);background:#fff;border-top:1px solid var(--bd);border-right:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.banner.closed{border-left-color:#A9B3A5;background:#fff}
+.dot{box-shadow:none}
+.how,.stat,.card,.lb,.empty{box-shadow:none;border:1px solid var(--bd);border-radius:var(--r)}
+.how summary{font-weight:600}
+.hcp{background:#fff;border:1px solid var(--bd);border-left:4px solid var(--teal);border-radius:var(--r)}
+.hcp .v{font-family:var(--sans);font-weight:700;letter-spacing:-.02em}
+.lock{border:1px solid var(--bd);border-radius:6px}
+.stats{gap:0;background:#fff;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.stat{border:0;border-radius:0;border-right:1px solid var(--bd);background:#fff}
+.stat:last-child{border-right:0}
+.stat b{font-family:var(--sans);font-weight:700;font-size:22px;color:var(--forest);letter-spacing:-.02em}
+.stat.hl{background:var(--forest)}.stat.hl b{color:#fff}
+.teepick button,.rtabs button{border-radius:6px}
+.teepick button.on,.rtabs button.on{box-shadow:none;background:var(--forest);border-color:var(--forest);color:#fff}
+.card th{background:#F7F9F5;color:var(--muted);border-bottom:1px solid var(--bd);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.card td:first-child{font-family:var(--sans);font-weight:700;font-size:15px}
+.card tr.sub td{background:#EEF2EA}
+.step{gap:6px}
+.step button{width:40px;height:44px;border-radius:8px;border:1px solid var(--bd);font-size:20px;background:#fff}
+.step button[data-d="1"]{background:var(--forest);border-color:var(--forest);color:#fff}
+.step button:active{transform:scale(.96)}
+.step input{width:48px;height:44px;border-radius:8px;border:1px solid var(--bd);font-size:18px}
+.step input.bogey{border:2px solid var(--olive)}
+.lb th{background:#F7F9F5;color:var(--muted);border-bottom:1px solid var(--bd);font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+.lb td.pos{font-family:var(--sans);font-weight:700;color:var(--forest)}
+.lb tr.q td{background:#FBF8EE}
+.lb tr.me td{background:#E3ECDD!important}
+.refresh{border-radius:8px}
+.lbh h2,.empty h2{font-family:var(--sans);font-weight:700;letter-spacing:-.02em;font-size:19px}
+.phasebar .step{border-radius:6px}
+.empty .go{border-radius:10px;display:block;padding:14px}
+#syncPill{border-radius:8px}
+/* bottom tab bar on phones */
+@media (max-width:760px){
+  header{padding-top:calc(8px + env(safe-area-inset-top));padding-bottom:10px}
+  .tabs{position:fixed;left:0;right:0;bottom:0;margin:0;z-index:40;background:#fff;border-top:1px solid var(--bd);padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr;max-width:none}
+  .tabs a{flex-direction:column;gap:3px;border:0;padding:6px 0;font-size:11.5px;color:#7b8778;border-radius:8px}
+  .tabs a.on{color:var(--forest);background:#EEF2EA}
+  .tabs svg{width:22px;height:22px}
+  main{padding:12px 12px calc(96px + env(safe-area-inset-bottom))}
+  #syncPill{bottom:calc(84px + env(safe-area-inset-bottom))}
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .stat{padding:9px 6px;text-align:center}.stat b{font-size:18px}.stat span{font-size:10px;line-height:1.2;display:block}
+  .hcp{padding:10px 12px}.hcp .v{font-size:28px;min-width:40px}
+  .card td{padding:6px 3px}
+  .step button{width:38px;height:44px}.step input{width:44px}
+}
 </style>
 </head>
-<body>
+<body data-install="1">
 <header>
   <div class="hrow"><span class="mark">IGC</span><div class="who"><b id="pname">…</b><small id="pevent"></small></div><button class="out" id="out">Sign out</button></div>
-  <nav class="tabs"><a href="#leaderboard" data-v="leaderboard">Leaderboard</a><a href="#scorecard" data-v="scorecard">My scorecard</a></nav>
+  <nav class="tabs" aria-label="Sections"><a href="#leaderboard" data-v="leaderboard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Leaderboard</span></a><a href="#scorecard" data-v="scorecard"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>My scorecard</span></a></nav>
 </header>
 <main>
   <div class="loading" id="loading">Loading your round…</div>
@@ -164,6 +234,7 @@ async function boot(){
   $("#loading").remove();
   await loadField();
   route();
+  syncPill(); flush();
   timer = setInterval(async () => {
     if(document.visibilityState !== "visible") return;
     const { data:c2 } = await sb.from("cities").select("phase,scoring_open,format").eq("id", city.id).single();
@@ -275,6 +346,33 @@ function renderStats(sc, FN = F, HC = false){
     ${HC ? `<div class="stat hl"><b class="num">${rd.holes.reduce((t,x)=>t+(x.strokes?x.s36:0),0)}</b><span>Super 36 points</span></div>` : `<div class="stat hl"><b class="num">${G.fmtMetric(FN, sc)}</b><span>${esc(G.metricLabel(FN))}${multi ? " · all rounds" : ""}</span></div>`}`;
 }
 const pending = new Map();
+/* ---------- offline queue: holes saved on the phone, sent when signal returns ---------- */
+const QKEY = () => "igc.queue." + P.id;
+const qGet = () => { try{ return JSON.parse(localStorage.getItem(QKEY())) || []; }catch(e){ return []; } };
+const qSet = q => { try{ localStorage.setItem(QKEY(), JSON.stringify(q)); }catch(e){} syncPill(); };
+function enqueue(item){ const q = qGet().filter(x => !(x.t === item.t && x.r === item.r && x.h === item.h)); q.push(item); qSet(q); }
+async function flush(){
+  const q = qGet(); if(!q.length || !navigator.onLine) return;
+  const left = [];
+  for(const x of q){
+    const tbl = sb.from(x.t);
+    const req = x.v ? tbl.upsert(x.t === "hcp_scores" ? { participant_id: P.id, hole: x.h, strokes: x.v } : { participant_id: P.id, round: x.r, hole: x.h, strokes: x.v })
+                    : (x.t === "hcp_scores" ? tbl.delete().eq("participant_id", P.id).eq("hole", x.h) : tbl.delete().eq("participant_id", P.id).eq("round", x.r).eq("hole", x.h));
+    const { error } = await req;
+    if(error && isNet(error)) left.push(x);           // still offline: keep
+    else if(error) console.warn("dropped queued hole", x, error.message);  // rejected (e.g. scoring closed)
+  }
+  qSet(left);
+  if(left.length < q.length){ loadField(); }
+}
+const isNet = e => !navigator.onLine || /fetch|network|load failed|timeout/i.test(e?.message || "");
+function syncPill(){
+  let el = document.getElementById("syncPill"); const n = qGet().length;
+  if(!el){ el = document.createElement("div"); el.id = "syncPill"; document.body.appendChild(el); }
+  el.className = n ? "on" : ""; el.textContent = n ? `${n} hole${n>1?"s":""} saved on this phone · will sync when online` : "";
+}
+addEventListener("online", flush);
+setInterval(flush, 20000);
 function save(h, v, tr, HC = false){
   const inp = tr.querySelector("input"), par = holes.find(x => x.hole === h).par, res = tr.querySelector(".res");
   inp.className = cls(v, par); res.innerHTML = '<span class="st">…</span>';
@@ -284,7 +382,8 @@ function save(h, v, tr, HC = false){
     const q = HC
       ? (v ? sb.from("hcp_scores").upsert({ participant_id: P.id, hole: h, strokes: v }) : sb.from("hcp_scores").delete().eq("participant_id", P.id).eq("hole", h))
       : (v ? sb.from("hole_scores").upsert({ participant_id: P.id, round: r, hole: h, strokes: v }) : sb.from("hole_scores").delete().eq("participant_id", P.id).eq("round", r).eq("hole", h));
-    const { error } = await q;
+    let error = null; try{ ({ error } = await q); }catch(e){ error = e; }
+    if(error && isNet(error)){ enqueue({ t: HC ? "hcp_scores" : "hole_scores", r, h, v }); error = null; }
     if(error){ res.innerHTML = `<span class="st err" title="${esc(error.message)}">Not saved – retry</span>`; return; }
     const target = HC ? hcard : card;
     if(v) target.set(key(HC ? 1 : r, h), v); else target.delete(key(HC ? 1 : r, h));
@@ -325,7 +424,7 @@ function route(){
   const v = location.hash.slice(1) === "scorecard" ? "scorecard" : "leaderboard";
   ["leaderboard","scorecard"].forEach(x => $("#v-"+x).classList.toggle("hidden", x !== v));
   document.querySelectorAll(".tabs a").forEach(a => a.classList.toggle("on", a.dataset.v === v));
-  document.querySelector('.tabs a[data-v="scorecard"]').textContent = isHcpPhase() ? "My handicap" : "My scorecard";
+  document.querySelector('.tabs a[data-v="scorecard"] span').textContent = isHcpPhase() ? "My handicap" : "My scorecard";
   v === "scorecard" ? renderScorecard() : renderLeaderboard();
 }
 addEventListener("hashchange", route);

@@ -1,0 +1,17 @@
+{
+  "name": "India Golf Carnival",
+  "short_name": "IGC Golf",
+  "description": "Scorecards, handicaps and live leaderboards for the India Golf Carnival.",
+  "id": "./login.html",
+  "start_url": "./login.html?source=app",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7FAF5",
+  "theme_color": "#26422B",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

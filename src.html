@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>India Golf Carnival 2026–27 · Tournament Hub</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#26422B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="IGC Golf">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<script src="pwa.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -261,6 +270,14 @@ table.card9 .tot small{display:block;font-weight:500;font-size:10.5px;color:var(
 .teechip .rm.armed{background:#fbeaea;color:#9b2c2c;font-weight:600}
 .teechip .rm:disabled{opacity:.35;cursor:not-allowed}
 .addtee{padding:6px 12px!important;font-size:12.5px;border-radius:999px!important}
+.qrsheet{text-align:center;padding:4px 10px}
+.qrsheet h2{font-size:26px;margin:6px 0 14px}
+.qrimg{width:260px;height:260px;margin:0 auto;display:grid;place-items:center;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff}
+.qrimg svg{width:100%;height:100%}
+.qurl{font-size:12.5px;color:var(--teal);margin:10px 0;word-break:break-all}
+.qsteps{text-align:left;max-width:460px;margin:10px auto;font-size:13.5px;line-height:1.55;color:var(--ink)}
+.qwarn{background:#fbf3e3;color:#7a5f10;border-radius:10px;padding:10px 12px;font-size:12.5px;text-align:left;max-width:520px;margin:10px auto}
+@media print{body *{visibility:hidden}#cardModal,#cardModal *{visibility:visible}#cardModal{position:absolute;inset:0;background:#fff}.cm-panel{box-shadow:none}.cm-close,#qrPrint,.qwarn{display:none!important}}
 .phases{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .phases button{font:inherit;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;color:var(--ink)}
 .phases button b{display:block;font-family:var(--serif);font-weight:500;font-size:15px;color:var(--forest)}
@@ -290,6 +307,9 @@ table.card9 .tot small{display:block;font-weight:500;font-size:10.5px;color:var(
 .preview{background:var(--sky);border-radius:10px;padding:10px 12px;font-size:12.5px}
 .preview .tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:4px}
 .preview p{margin:3px 0}
+.chip{border-radius:8px}.btn{border-radius:8px}.tabs a{border-radius:8px}
+nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{border-radius:8px}
+@media (max-width:760px){nav.tabs{gap:2px}nav.tabs a{padding:8px 10px;font-size:13px}.kpis{gap:8px}.kpi{border-radius:8px;padding:12px}.panel,.qcard,.tablewrap,.mcard,.bars,.stop{border-radius:8px}.banner{border-radius:10px}.road{grid-template-columns:repeat(9,120px)}.toolbar .btn{flex:1}}
 @media (max-width:1000px){.setup-grid{grid-template-columns:1fr}}
 
 @media (max-width:1000px){.qgrid{grid-template-columns:repeat(2,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}.method{grid-template-columns:1fr}}
@@ -669,7 +689,7 @@ function renderSetup(){
   const F = JSON.parse(JSON.stringify(fmtOf(c)));
   const v = $("#v-setup");
   v.innerHTML = `
-    <div class="h-row"><h2>Event setup</h2><span class="sub">Design the course, the format and each player's handicap. Players see these but can't change them.</span></div><div class="hr"></div>
+    <div class="h-row"><h2>Event setup</h2><button type="button" class="btn btn-ghost" id="qrBtn" style="margin-left:auto">Player app QR code</button><span class="sub" style="flex-basis:100%;text-align:right">Design the course, the format and each player's handicap. Players see these but can't change them.</span></div><div class="hr"></div>
     <div class="toolbar"><div class="chips" id="suChips">${L.map(x => `<button class="chip ${x.id===c.id?"on":""}" data-c="${x.id}">${x.scoring_open?'<span class="dot"></span>':""}${esc(x.name)}</button>`).join("")}</div></div>
     <div class="setup-grid">
       <div style="display:grid;gap:16px">
@@ -901,6 +921,8 @@ function renderSetup(){
     m.textContent = `Course saved ✓ · par ${payload.reduce((n,r)=>n+r.par,0)}`; toast(`IGC ${c.name} course card saved`);
   });
 
+  $("#qrBtn").addEventListener("click", showQR);
+
   // ---- handicap list: Set number / Super 36
   const hcpCards = new Map();   // pid -> Map(hole -> strokes) for Super 36 rounds
   const s36Course = () => courseOf(c).map(h => ({ hole: h.hole, par: h.par, stroke_index: h.stroke_index }));
@@ -989,6 +1011,26 @@ function renderSetup(){
     drawHcp();
   })();
   drawHcp();
+}
+
+/* ---------- player app QR (PWA install) ---------- */
+async function showQR(){
+  const url = new URL("login.html", location.href).href.replace(/[?#].*$/, "");
+  const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || location.protocol !== "https:";
+  const box = $("#cardModal"); box.classList.remove("hidden"); document.body.style.overflow = "hidden";
+  box.querySelector(".cm-body").innerHTML = `<div class="qrsheet"><div class="eyebrow">India Golf Carnival</div><h2>Scan to open the IGC Golf app</h2>
+    <div id="qrImg" class="qrimg">Generating…</div><div class="qurl">${esc(url)}</div>
+    <ol class="qsteps"><li>Scan with your phone camera and sign in with the login from the tournament office.</li>
+      <li><b>iPhone:</b> in Safari tap <b>Share</b> → <b>Add to Home Screen</b>.<br><b>Android:</b> in Chrome tap <b>Install app</b> (or ⋮ → Add to Home screen).</li>
+      <li>Open <b>IGC Golf</b> from your home screen: full screen, no browser bar.</li></ol>
+    ${local ? `<div class="qwarn">This page is open on <b>${esc(location.host)}</b>${location.protocol!=="https:"?" without HTTPS":""}. Phones can't reach your laptop's localhost, and installing as an app needs HTTPS. Put the site on a host (Netlify, Vercel, GitHub Pages) and open this QR from there.</div>` : ""}
+    <div class="actions"><button class="btn btn-primary" id="qrPrint">Print</button></div></div>`;
+  try{
+    const mod = await import("https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/+esm");
+    const qr = (mod.default || mod)(0, "M"); qr.addData(url); qr.make();
+    $("#qrImg").innerHTML = qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true });
+  }catch(e){ $("#qrImg").textContent = "Couldn't load the QR generator. Check your connection."; }
+  $("#qrPrint").addEventListener("click", () => window.print());
 }
 
 /* ---------- routing + shell ---------- */

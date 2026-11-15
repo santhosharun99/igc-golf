@@ -4,6 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in · India Golf Carnival</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#26422B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="IGC Golf">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<script src="pwa.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@400;500&display=swap" rel="stylesheet">
@@ -32,17 +41,33 @@ button.go:hover{background:#1d3522}button.go:disabled{opacity:.6;cursor:wait}
 .msg{min-height:1.4em;font-size:13px;color:#9b2c2c;margin:0}
 .msg.ok{color:var(--olive)}
 .foot{margin-top:18px;font-size:11.5px;color:var(--muted)}
+
+/* clean, app-like sign-in */
+.card{border-radius:14px;box-shadow:0 1px 0 rgba(0,0,0,.02);border:1px solid #D9E0D4}
+h1{font-family:var(--sans);font-weight:700;letter-spacing:-.02em;font-size:28px}
+.rule{display:none}
+.roles{grid-template-columns:1fr 1fr;gap:0;background:#EEF2EA;padding:4px;border-radius:10px;margin:18px 0}
+.role{border:0;border-radius:8px;background:transparent;padding:10px;text-align:center;box-shadow:none!important}
+.role b{font-family:var(--sans);font-weight:600;font-size:14px;color:#566559}
+.role.on{background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)!important}
+.role.on b{color:var(--forest)}
+input{height:50px;border-radius:10px;font-size:16px}
+button.go{height:52px;border-radius:10px;font-size:15.5px;margin-top:6px}
+@media (max-width:560px){
+  body{place-items:end center;padding:0}
+  .card{width:100%;border-radius:18px 18px 0 0;border-bottom:0;padding:26px 20px calc(24px + env(safe-area-inset-bottom))}
+}
 </style>
 </head>
-<body>
+<body data-install="1">
 <main class="card">
   <a class="back" href="index.html">← Home</a>
   <div class="eyebrow">India Golf Carnival</div>
   <h1>Sign in</h1>
   <div class="rule"></div>
   <div class="roles" role="radiogroup" aria-label="Sign in as">
-    <button type="button" class="role on" data-role="player" role="radio" aria-checked="true"><b>Player</b><span>Enter your score, see the leaderboard</span></button>
-    <button type="button" class="role" data-role="admin" role="radio" aria-checked="false"><b>Admin</b><span>Tournament office: players, handicaps, results</span></button>
+    <button type="button" class="role on" data-role="player" role="radio" aria-checked="true"><b>Player</b></button>
+    <button type="button" class="role" data-role="admin" role="radio" aria-checked="false"><b>Admin</b></button>
   </div>
   <form id="f" autocomplete="on">
     <label>Email address<input id="em" type="email" autocomplete="username" required placeholder="Email address"></label>
@@ -64,7 +89,7 @@ function setRole(r){
   role = r;
   document.querySelectorAll(".role").forEach(b => { const on = b.dataset.role === r; b.classList.toggle("on", on); b.setAttribute("aria-checked", on); });
   $("#go").textContent = r === "admin" ? "Sign in as admin" : "Sign in as player";
-  $("#foot").textContent = r === "admin" ? "Admin access is limited to the ISL tournament office." : "Player logins are issued by the tournament office when you register.";
+  $("#foot").textContent = r === "admin" ? "Admin access: ISL tournament office only." : "Use the login the tournament office gave you when you registered.";
   msg("");
 }
 function msg(t, ok){ $("#msg").textContent = t || ""; $("#msg").classList.toggle("ok", !!ok); }
