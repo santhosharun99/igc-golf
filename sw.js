@@ -1,7 +1,7 @@
 /* IGC service worker: makes the app installable and keeps it opening when signal is weak.
  * Pages and scripts: network first (so updates arrive), cached copy when offline.
  * Supabase data/API calls are never cached. Video frames: cache first. */
-const VERSION = "igc-v18";
+const VERSION = "igc-v19";
 const SHELL = ["./login.html", "./play.html", "./app.html", "./index.html", "./scoring.js", "./ckimport.js", "./regimport.js", "./pwa.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 

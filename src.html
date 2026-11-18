@@ -873,7 +873,22 @@ async function openCheck(pid, round = 1){
   Object.assign(CC, { pid, round, p, c, holes, img: null, imagePath: null, read: null, name: "", prior: ccOf(pid) });
   $("#ccTitle").textContent = `Check paper card · ${p.full_name}`;
   $("#ccDialog").showModal();
+  if(CC.prior && Array.isArray(CC.prior.read_scores) && CC.prior.read_scores.length){ await showSavedCheck(); return; }
   drawCheckStart();
+}
+async function showSavedCheck(){
+  const k = CC.prior;
+  $("#ccBody").innerHTML = `<div class="ccstatus info">Loading the saved check…</div>`;
+  CC.read = k.read_scores.slice(); CC.manual = k.source !== "photo";
+  await loadSavedPhoto();
+  const when = new Date(k.checked_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  const fixed = (k.mismatches || []);
+  const hist = `<div class="ccstatus ${k.status === "mismatch" ? "bad" : k.status === "verified" ? "ok" : "info"}">
+    <b>${k.status === "verified" ? "Verified" : k.status === "corrected" ? "Corrected" : "Flagged for manual check"}</b> from ${esc(k.source === "csv" ? "CSV" : k.source)} by ${esc(k.checked_by || "admin")}, ${when}.
+    ${fixed.length ? `<br>${k.status === "corrected" ? "Changed from the player's entry" : "Didn't match"}: ${fixed.map(x => `hole ${x.hole} (entered ${x.entered ?? "–"} → card ${x.card ?? "?"})`).join(", ")}.` : k.status === "verified" ? " Every hole matched the player's entry." : ""}
+    <button class="btn btn-ghost" id="ccNew" style="font-size:12px;padding:3px 9px;margin-left:6px">Check again with a new photo</button></div>`;
+  drawCompare(hist);
+  $("#ccNew")?.addEventListener("click", () => { CC.img = null; CC.imagePath = null; drawCheckStart(); });
 }
 function drawCheckStart(){
   const { c, prior } = CC, R = c.rounds_count || 1;
