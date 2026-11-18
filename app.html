@@ -832,7 +832,7 @@ function openOcrSettings(){
     <label class="fld">Vision model<input id="ocModel" value="${esc(OCR.model)}" list="ocModels"></label>
     <datalist id="ocModels"><option value="qwen2.5vl:7b"><option value="qwen2.5vl:3b"><option value="qwen3-vl:8b"></datalist>
     <div id="ocStat" class="ccstatus info">Checking…</div>
-    <p style="font-size:13px;margin:6px 0"><a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="docs/start-card-reader.command" download>Download start script (Mac)</a></p>
+    <p style="font-size:13px;margin:6px 0"><a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="docs/start-card-reader.command" download>Start script (Mac)</a> · <a href="docs/start-card-reader.bat" download>Start script (Windows)</a></p>
     <div class="ckdlg-actions"><button class="btn btn-primary" id="ocSave">Save &amp; test</button><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
   const test = async () => { const r = await ocrPing(); $("#ocStat").outerHTML = r.ok ? `<div id="ocStat" class="ccstatus ok">Connected · ${esc(OCR.model)} is ready.</div>` : `<div id="ocStat">${ocrHelp(r.why)}</div>`; };
   $("#ocSave").onclick = () => { OCR.set($("#ocUrl").value.trim().replace(/\/$/,""), $("#ocModel").value.trim()); test(); };
@@ -908,7 +908,7 @@ function drawCheckStart(){
       It needs <b>Ollama</b> with the <b>${esc(OCR.model)}</b> model and the <b>start-card-reader</b> script (which opens a secure link) running on that laptop, with its address saved in <b>Scores → Card reader</b>.
       Without it you can still type the card in by hand.
       <span id="ccNoteStat" class="muted">Checking the reader…</span>
-      <div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost" href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a><a class="btn btn-ghost" href="docs/start-card-reader.command" download>Download start script (Mac)</a><button class="btn btn-ghost" id="ccSettings">Card reader settings</button></div></div>
+      <div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost" href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a><a class="btn btn-ghost" href="docs/start-card-reader.command" download>Start script · Mac</a><a class="btn btn-ghost" href="docs/start-card-reader.bat" download>Start script · Windows</a><button class="btn btn-ghost" id="ccSettings">Card reader settings</button></div></div>
     <div class="ckdlg-actions"><button class="btn btn-ghost" id="ccCancel">Close</button></div>`;
   $("#ccRound")?.addEventListener("change", e => { CC.round = +e.target.value; });
   $("#ccCancel").onclick = () => $("#ccDialog").close();
