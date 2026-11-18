@@ -843,12 +843,12 @@ function openReaderHelp(why, onLive, force){
     <p style="font-size:14px;margin:4px 0 12px">The card reader isn't running on this ${win ? "Windows laptop" : mac ? "Mac" : "device"} yet. One file sets up everything (Ollama, the card-reading model and the start link), then starts it.</p>
     ${!win && !mac ? `<div class="ccstatus bad">Phones and tablets can't run the card reader. Use a Mac or Windows laptop, or type cards in by hand.</div>` : `
     <div class="rdsteps">
-      <div><i class="n">1</i><span><a class="btn btn-primary" href="${file}" download>Download ${win ? "installer for Windows" : "installer for Mac"}</a></span></div>
-      <div><i class="n">2</i><span>${win ? "Open it from Downloads. If Windows says <i>protected your PC</i>, click <b>More info → Run anyway</b>." : "In Downloads, double-click the <b>zip</b>, then double-click <b>install-card-reader-mac</b>. If macOS says it can't verify it: click <b>Done</b>, open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b> (first time only)."}</span></div>
+      <div><i class="n">1</i><span style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn ${win ? "btn-ghost" : "btn-primary"} rd-dl" href="docs/install-card-reader-mac.zip" download>Download for Mac</a><a class="btn ${win ? "btn-primary" : "btn-ghost"} rd-dl" href="docs/install-card-reader-windows.bat" download>Download for Windows</a></span></div>
+      <div><i class="n">2</i><span><b>Mac:</b> in Downloads, double-click the <b>zip</b>, then double-click <b>install-card-reader-mac</b>. If macOS says it can't verify it: click <b>Done</b> → <b>System Settings → Privacy &amp; Security</b> → <b>Open Anyway</b>.<br><b>Windows:</b> open <b>install-card-reader-windows</b> from Downloads. If it says <i>Windows protected your PC</i>: <b>More info → Run anyway</b>.<br><span class="muted">Only the first time on each laptop.</span></span></div>
       <div><i class="n">3</i><span>Leave this page open. The first setup downloads the model (about 6 GB, once), so it can take a while; on a laptop that already has it, about a minute.</span></div>
     </div>
     <div class="ccstatus info" id="rdWait"><span class="spin"></span> Waiting for the card reader to come online… this switches on by itself.</div>`}
-    <p class="muted" style="font-size:12.5px;margin:10px 0 0">${win ? `<a href="docs/install-card-reader-mac.zip" download>Mac installer</a>` : `<a href="docs/install-card-reader-windows.bat" download>Windows installer</a>`} · <a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="#" id="rdAdv">Advanced settings</a></p>
+    <p class="muted" style="font-size:12.5px;margin:10px 0 0"><a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="#" id="rdAdv">Advanced settings</a></p>
     <div class="ckdlg-actions"><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
   let stop = false;
   const close = () => { stop = true; $("#ocDialog").close(); };
@@ -871,7 +871,7 @@ function openReaderHelp(why, onLive, force){
   })();
   if(force){
     $("#rdWait").innerHTML = "Download and run the installer; this box starts checking once you've downloaded it.";
-    box.querySelector("a.btn-primary").addEventListener("click", () => { setTimeout(() => { $("#rdWait").innerHTML = `<span class="spin"></span> Waiting for the card reader to come online… this switches on by itself.`; go(); }, 4000); }, { once: true });
+    box.querySelectorAll("a.rd-dl").forEach(a => a.addEventListener("click", () => { setTimeout(() => { $("#rdWait").innerHTML = `<span class="spin"></span> Waiting for the card reader to come online… this switches on by itself.`; go(); }, 4000); }, { once: true }));
   } else go();
 }
 async function ocrPing(){
