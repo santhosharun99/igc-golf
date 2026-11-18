@@ -835,7 +835,7 @@ async function ensureReader(launch){
   for(let i = 0; i < 10; i++){ await new Promise(z => setTimeout(z, 1000)); r = await ocrPing(); if(r.ok) return r; }
   return { ok: false, why: "the card reader isn't installed on this laptop, or the browser blocked it from opening" };
 }
-function openReaderHelp(why, onLive){
+function openReaderHelp(why, onLive, force){
   const win = /Windows/i.test(navigator.userAgent), mac = /Macintosh|Mac OS X/i.test(navigator.userAgent) && !/iPhone|iPad/i.test(navigator.userAgent);
   const file = win ? "docs/install-card-reader-windows.bat" : "docs/install-card-reader-mac.command";
   const box = $("#ocBody");
@@ -858,7 +858,7 @@ function openReaderHelp(why, onLive){
   if(!$("#ocDialog").open) $("#ocDialog").showModal();
   if(!win && !mac) return;
   OCR.set(LOCAL_READER, OCR.model);
-  (async () => {
+  const go = () => (async () => {
     let tries = 0;
     while(!stop){
       const r = await ocrPing();
@@ -869,6 +869,10 @@ function openReaderHelp(why, onLive){
       await new Promise(z => setTimeout(z, 3000));
     }
   })();
+  if(force){
+    $("#rdWait").innerHTML = "Download and run the installer; this box starts checking once you've downloaded it.";
+    box.querySelector("a.btn-primary").addEventListener("click", () => { setTimeout(() => { $("#rdWait").innerHTML = `<span class="spin"></span> Waiting for the card reader to come online… this switches on by itself.`; go(); }, 4000); }, { once: true });
+  } else go();
 }
 async function ocrPing(){
   try{ const r = await fetch(OCR.url + "/api/tags", { signal: AbortSignal.timeout(4000) }); if(!r.ok) return { ok:false, why:`reader answered ${r.status}` };
@@ -892,11 +896,13 @@ function openOcrSettings(){
     <label class="fld">Vision model<input id="ocModel" value="${esc(OCR.model)}" list="ocModels"></label>
     <datalist id="ocModels"><option value="qwen2.5vl:7b"><option value="qwen2.5vl:3b"><option value="qwen3-vl:8b"></datalist>
     <div id="ocStat" class="ccstatus info">Checking…</div>
+    <p style="margin:10px 0 4px"><button class="btn btn-ghost" id="ocSetup">Set up a laptop (download installer)</button></p>
     <p style="font-size:13px;margin:6px 0"><a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="docs/start-card-reader.command" download>Start script (Mac)</a> · <a href="docs/start-card-reader.bat" download>Start script (Windows)</a></p>
     <div class="ckdlg-actions"><button class="btn btn-primary" id="ocSave">Save &amp; test</button><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
   const test = async () => { const r = await ocrPing(); $("#ocStat").outerHTML = r.ok ? `<div id="ocStat" class="ccstatus ok">Connected · ${esc(OCR.model)} is ready.</div>` : `<div id="ocStat">${ocrHelp(r.why)}</div>`; };
   $("#ocSave").onclick = () => { OCR.set($("#ocUrl").value.trim().replace(/\/$/,""), $("#ocModel").value.trim()); test(); };
   $("#ocClose").onclick = () => $("#ocDialog").close();
+  $("#ocSetup").onclick = () => openReaderHelp("Set up the card reader on this laptop", () => renderScores(), true);
   $("#ocDialog").showModal(); test();
 }
 async function shrinkImage(file, max = 1600){
