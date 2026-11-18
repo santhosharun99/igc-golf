@@ -1,9 +1,9 @@
 /* IGC service worker: makes the app installable and keeps it opening when signal is weak.
  * Pages and scripts: network first (so updates arrive), cached copy when offline.
  * Supabase data/API calls are never cached. Video frames: cache first. */
-const VERSION = "igc-v7";
+const VERSION = "igc-v6";
 const SHELL = ["./login.html", "./play.html", "./app.html", "./index.html", "./scoring.js", "./ckimport.js", "./regimport.js", "./pwa.js",
-  "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/ball.png"];
+  "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
