@@ -481,7 +481,8 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 .ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
 .csrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.csrow h4{margin:0 0 6px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 @media (max-width:860px){.ccgrid{grid-template-columns:1fr}.ccimg{position:static}}
-</style>
+.brand>span{white-space:nowrap}@media(max-width:1180px){.brand small{display:none}}@media(max-width:1000px){.brand b{display:none}}
+.isl{height:30px;width:auto;flex:none;background:#fff;border-radius:7px;padding:3px 6px;box-sizing:content-box;border:1px solid rgba(0,0,0,.06)}</style>
 </head>
 <body>
 
@@ -506,7 +507,7 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 <!-- ============ APP ============ -->
 <div id="app" class="hidden">
   <header class="top"><div class="top-in">
-    <a class="brand" href="#dashboard"><span class="mark">IGC</span><span><b>India Golf Carnival</b><small>Road to Almaty · 2026–27</small></span></a>
+    <a class="brand" href="#dashboard"><span class="mark">IGC</span><img class="isl" src="icons/islworld.png" alt="ISL World" width="60" height="30"><span><b>India Golf Carnival</b><small>Road to Almaty · 2026–27</small></span></a>
     <nav class="tabs">
       <a href="#dashboard" data-v="dashboard">Dashboard</a>
       <a href="#participants" data-v="participants">Participants</a>
