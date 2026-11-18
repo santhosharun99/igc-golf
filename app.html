@@ -473,6 +473,7 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 .ccsum{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}.ccsum .big{font-size:18px;font-weight:800}
 .ccstatus{padding:10px 12px;border-radius:9px;font-size:14px}.ccstatus.ok{background:#e3f3e8;color:#1f6b3d}.ccstatus.bad{background:#fde4e1;color:#9b1c13}.ccstatus.info{background:#eef2f7;color:#334}
 .ccpick{position:relative;max-height:68vh;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:10px}.ccpick img{width:100%;display:block;cursor:crosshair}.ccband{position:absolute;left:0;right:0;background:rgba(31,61,43,.18);border-top:2px solid #1f3d2b;border-bottom:2px solid #1f3d2b;pointer-events:none}
+.rdsw .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#b9c3b6;margin-right:7px;vertical-align:middle}.rdsw[aria-pressed="true"] .dot{background:#5ee08f;box-shadow:0 0 0 3px rgba(94,224,143,.25)}
 .ccnote{margin-top:14px;background:#f6f8f4;border:1px solid var(--line);border-left:4px solid #b8933a;border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.5}.ccnote .btn{font-size:12.5px;padding:5px 11px}
 .ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
 .csrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.csrow h4{margin:0 0 6px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -746,7 +747,8 @@ function renderScores(){
     <div class="toolbar"><div class="chips" id="sChips">${chipsHTML(S.sCity,false)}</div><span class="spacer"></span>
       <button class="btn btn-ghost" id="sRefresh">Refresh</button>
       <button class="btn btn-ghost" id="sCsvCheck">Cross-check CSV</button>
-      <button class="btn btn-ghost" id="sOcrSet" title="Card reader settings">Card reader</button>
+      <button class="btn ${OCR.on ? "btn-primary" : "btn-ghost"} rdsw" id="sOcrOn" aria-pressed="${OCR.on}" title="Read paper cards automatically with the card reader on this laptop"><span class="dot"></span>Card reader: ${OCR.on ? "On" : "Off"}</button>
+      <button class="btn btn-ghost" id="sOcrSet" title="Card reader settings" aria-label="Card reader settings">⚙</button>
       <button class="btn btn-ghost" id="sCsv" ${rows.length?"":"disabled"}>Export CSV · ${esc(c.name)}</button>
       <button class="btn btn-primary" id="sCsvAll">Export CSV · all events</button></div>
     <div class="method">
@@ -775,6 +777,13 @@ function renderScores(){
   v.querySelectorAll("[data-ccopen]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); openCheck(+b.dataset.ccopen); }));
   $("#sCsvCheck").addEventListener("click", () => openCsvCheck(c.id));
   $("#sOcrSet").addEventListener("click", openOcrSettings);
+  $("#sOcrOn").addEventListener("click", async () => {
+    if(OCR.on){ OCR.on = false; renderScores(); toast("Card reader off: cards will be typed in by hand"); return; }
+    OCR.on = true; renderScores(); toast("Starting the card reader on this laptop…");
+    const r = await ensureReader(true);
+    toast(r.ok ? "Card reader is on and ready" : "Card reader didn't start: " + r.why);
+    if(!r.ok){ OCR.on = false; renderScores(); openReaderHelp(r.why); }
+  });
   if(!S.cc.has(c.id)) loadChecks(c.id).then(() => { if(S.sCity === c.id && document.querySelector("#v-scores .h-row")) renderScores(); });
   $("#sCsv").addEventListener("click", () => exportCSV([c]));
   $("#sCsvAll").addEventListener("click", async () => { const cs = legs().filter(x => playersIn(x.id).length); for(const x of cs) if(!S.ev.get(x.id)) await loadEvent(x.id); exportCSV(cs); });
@@ -808,8 +817,37 @@ function ccBanner(cid){
 const OCR = {
   get url(){ try{ return localStorage.getItem("igc.ocr.url") || "http://localhost:11434"; }catch{ return "http://localhost:11434"; } },
   get model(){ try{ return localStorage.getItem("igc.ocr.model") || "qwen2.5vl:7b"; }catch{ return "qwen2.5vl:7b"; } },
-  set(u, m){ try{ localStorage.setItem("igc.ocr.url", u); localStorage.setItem("igc.ocr.model", m); }catch{} }
+  set(u, m){ try{ localStorage.setItem("igc.ocr.url", u); localStorage.setItem("igc.ocr.model", m); }catch{} },
+  get on(){ try{ return localStorage.getItem("igc.ocr.on") === "1"; }catch{ return false; } },
+  set on(v){ try{ localStorage.setItem("igc.ocr.on", v ? "1" : "0"); }catch{} }
 };
+const LOCAL_READER = "http://localhost:11434";
+function launchReader(){ const a = document.createElement("a"); a.href = "igc-reader://start"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove(); }
+async function ensureReader(launch){
+  let r = await ocrPing(); if(r.ok) return r;
+  // Not reachable: start the reader on this laptop
+  if(OCR.url !== LOCAL_READER){ const keep = OCR.url; OCR.set(LOCAL_READER, OCR.model); r = await ocrPing(); if(r.ok) return r; OCR.set(keep, OCR.model); }
+  if(!launch) return r;
+  OCR.set(LOCAL_READER, OCR.model);
+  launchReader();
+  for(let i = 0; i < 45; i++){ await new Promise(z => setTimeout(z, 1000)); r = await ocrPing(); if(r.ok) return r; }
+  return { ok: false, why: "the card reader isn't installed on this laptop, or the browser blocked it from opening" };
+}
+function openReaderHelp(why){
+  const box = $("#ocBody");
+  box.innerHTML = `<div class="ckdlg-title">Set up the card reader on this laptop</div>
+    <div class="ccstatus bad">${esc(why)}.</div>
+    <p style="font-size:14px;margin:10px 0 6px"><b>One time per laptop</b> (about 20 minutes, mostly the 6 GB model download):</p>
+    <ol style="font-size:14px;margin:0 0 8px;padding-left:20px;line-height:1.6">
+      <li>Install <b>Ollama</b> from <a href="https://ollama.com" target="_blank" rel="noopener">ollama.com</a> and open it once.</li>
+      <li>Download and run the installer for this laptop: <a href="docs/install-card-reader-mac.command" download>Mac installer</a> · <a href="docs/install-card-reader-windows.bat" download>Windows installer</a>.<br><span class="muted" style="font-size:12.5px">Mac: right-click it → Open the first time. Windows: More info → Run anyway.</span></li>
+      <li>Come back and switch <b>Card reader: On</b>. When the browser asks to open <b>IGC Card Reader</b>, tick <b>Always allow</b>.</li>
+    </ol>
+    <p class="muted" style="font-size:12.5px">After that, the switch (or uploading a card photo) starts the reader automatically. Full steps: <a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a>.</p>
+    <div class="ckdlg-actions"><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
+  $("#ocClose").onclick = () => $("#ocDialog").close();
+  if(!$("#ocDialog").open) $("#ocDialog").showModal();
+}
 async function ocrPing(){
   try{ const r = await fetch(OCR.url + "/api/tags", { signal: AbortSignal.timeout(4000) }); if(!r.ok) return { ok:false, why:`reader answered ${r.status}` };
     const j = await r.json(); const names = (j.models || []).map(m => m.name);
@@ -904,20 +942,19 @@ function drawCheckStart(){
         <button class="btn btn-ghost" id="ccManual">Type the card in by hand</button></div>
       <p class="muted" style="margin:0;font-size:12.5px">or drop a photo here</p>
     </div>
-    <div class="ccnote" id="ccNote"><b>To read cards automatically, the card reader must be running on a laptop.</b>
-      It needs <b>Ollama</b> with the <b>${esc(OCR.model)}</b> model and the <b>start-card-reader</b> script (which opens a secure link) running on that laptop, with its address saved in <b>Scores → Card reader</b>.
-      Without it you can still type the card in by hand.
+    <div class="ccnote" id="ccNote"><b>Card photos are read by the card reader on this laptop.</b>
+      Uploading a photo starts it automatically on any laptop where it has been installed once (Ollama + the IGC installer). On a phone, or a laptop without it, type the card in by hand.
       <span id="ccNoteStat" class="muted">Checking the reader…</span>
-      <div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost" href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a><a class="btn btn-ghost" href="docs/start-card-reader.command" download>Start script · Mac</a><a class="btn btn-ghost" href="docs/start-card-reader.bat" download>Start script · Windows</a><button class="btn btn-ghost" id="ccSettings">Card reader settings</button></div></div>
+      <div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost" href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a><a class="btn btn-ghost" href="docs/install-card-reader-mac.command" download>Installer · Mac</a><a class="btn btn-ghost" href="docs/install-card-reader-windows.bat" download>Installer · Windows</a><button class="btn btn-ghost" id="ccSettings">Card reader settings</button></div></div>
     <div class="ckdlg-actions"><button class="btn btn-ghost" id="ccCancel">Close</button></div>`;
   $("#ccRound")?.addEventListener("change", e => { CC.round = +e.target.value; });
   $("#ccCancel").onclick = () => $("#ccDialog").close();
   $("#ccSettings").onclick = () => { $("#ccDialog").close(); openOcrSettings(); };
-  ocrPing().then(r => { const el = $("#ccNoteStat"); if(el) el.innerHTML = r.ok ? `<b style="color:#1f6b3d">✓ Reader connected</b> (${esc(OCR.url)}).` : `<b style="color:#b42318">✗ Reader not reachable</b>: ${esc(r.why)}.`; });
+  ocrPing().then(r => { CC.readerOk = r.ok; const el = $("#ccNoteStat"); if(el) el.innerHTML = r.ok ? `<b style="color:#1f6b3d">✓ Reader connected</b> (${esc(OCR.url)}).` : `<b style="color:#b42318">✗ Reader not reachable</b>: ${esc(r.why)}.`; });
   $("#ccManual").onclick = () => { CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(); };
   $("#ccResume")?.addEventListener("click", async () => { CC.read = (CC.prior.read_scores || []).slice(); CC.manual = CC.prior.source !== "photo"; await loadSavedPhoto(); drawCompare(); });
   $("#ccPhotoView")?.addEventListener("click", async () => { const u = await signedPhoto(CC.prior.image_path); if(u) window.open(u, "_blank", "noopener"); });
-  const take = f => f && runRead(f);
+  const take = f => { if(!f) return; if(!CC.readerOk && OCR.url === LOCAL_READER) launchReader(); runRead(f); };
   $("#ccCam").onchange = e => take(e.target.files[0]); $("#ccFile").onchange = e => take(e.target.files[0]);
   const d = $("#ccDrop"); d.ondragover = e => { e.preventDefault(); d.style.borderColor = "#1f3d2b"; }; d.ondragleave = () => d.style.borderColor = "";
   d.ondrop = e => { e.preventDefault(); take(e.dataTransfer.files[0]); };
@@ -927,9 +964,10 @@ async function runRead(file){
   $("#ccBody").innerHTML = `<div class="ccstatus info" id="ccMsg">Preparing the photo…</div><div class="ccprog" style="margin-top:10px"><i id="ccBar"></i></div><p class="muted" style="font-size:12.5px">The first card can take up to a minute while the model loads; later cards are quicker.</p>`;
   try{
     CC.img = await shrinkImage(file); $("#ccBar").style.width = "15%";
-    $("#ccMsg").textContent = "Checking the card reader…";
-    const ping = await ocrPing();
-    if(!ping.ok){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(ocrHelp(ping.why)); return; }
+    $("#ccMsg").textContent = "Starting the card reader on this laptop…";
+    const ping = await ensureReader(true);
+    if(ping.ok && !OCR.on){ OCR.on = true; }
+    if(!ping.ok){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(`<div class="ccstatus bad"><b>The card reader didn't start on this laptop</b> (${esc(ping.why)}). Type the scores from the photo below, or <a href="#" id="ccHelp">set up the card reader</a>.</div>`); $("#ccHelp")?.addEventListener("click", e => { e.preventDefault(); openReaderHelp(ping.why); }); return; }
     drawPickRow();
   }catch(e){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(`<div class="ccstatus bad">Couldn't read the card: ${esc(e.message)}. Type the scores from the photo.</div>`); }
 }
