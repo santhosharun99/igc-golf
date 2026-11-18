@@ -108,3 +108,15 @@ create table if not exists public.procurement (
 );
 alter table public.procurement enable row level security;
 create policy "staff manage procurement" on public.procurement for all to authenticated using ((select public.is_staff())) with check ((select public.is_staff()));
+
+-- Paper card checks (photo / CSV cross-check against player-entered scores)
+create table if not exists public.card_checks (
+  participant_id bigint not null references public.participants(id) on delete cascade,
+  round smallint not null default 1, city_id smallint not null,
+  source text not null check (source in ('photo','csv','manual')),
+  status text not null check (status in ('verified','mismatch','corrected')),
+  read_scores jsonb, mismatches jsonb, note text, checked_by text,
+  checked_at timestamptz not null default now(), primary key (participant_id, round)
+);
+alter table public.card_checks enable row level security;
+create policy "staff manage card checks" on public.card_checks for all to authenticated using ((select public.is_staff())) with check ((select public.is_staff()));

@@ -454,6 +454,27 @@ dialog.ckdlg.spdlg{width:min(1000px,96vw);max-height:90vh}
 .sptab textarea{min-height:36px;resize:vertical}.sptab .amt{width:130px;text-align:right}
 .sptot{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}.sptot b{font-size:18px}
 @media (max-width:700px){.sptab thead{display:none}.sptab tr{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}.sptab td{padding:0}.sptab td.n{grid-column:1/-1}.sptab .amt{width:100%}}
+.fld{display:grid;gap:4px;font-size:13px;font-weight:600;margin:6px 0}.fld input,.fld select{font:inherit;font-weight:400;border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.ccell{white-space:nowrap}.cc-btn{font-size:12px;padding:4px 9px;margin-left:4px}
+.ccp{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:99px;border:0;cursor:pointer}
+.ccp.ok{background:#e3f3e8;color:#1f6b3d}.ccp.bad{background:#fde4e1;color:#b42318}.ccp.fix{background:#e6eefb;color:#25508f}
+.ccbanner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff4e5;border:1px solid #f3c98b;border-left:5px solid #d97706;border-radius:10px;padding:10px 14px;margin:0 0 14px}
+.ccbanner b{color:#9a4b00}.ccbanner .btn{font-size:12px;padding:4px 10px}
+dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
+.ccgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px;align-items:start}
+.ccimg{position:sticky;top:0}.ccimg img{width:100%;border:1px solid var(--line);border-radius:8px;cursor:zoom-in}.ccimg img.zoom{cursor:zoom-out;width:200%;max-width:none}
+.ccimgwrap{max-height:70vh;overflow:auto;border-radius:8px}
+.ccdrop{border:2px dashed var(--line);border-radius:12px;padding:26px;text-align:center;display:grid;gap:12px;justify-items:center}
+.ccdrop .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.cmp{border-collapse:collapse;width:100%;font-size:13px}.cmp th,.cmp td{border:1px solid var(--line);padding:4px 3px;text-align:center}
+.cmp th{background:#1f3d2b;color:#fff;font-weight:600}.cmp td.lab{text-align:left;font-weight:600;background:#f6f8f4;white-space:nowrap;padding:4px 7px}
+.cmp td.mm{background:#fde4e1}.cmp td.mm input{border-color:#e5484d}.cmp td.ok{background:#eef8f1}
+.cmp input{width:34px;text-align:center;font:inherit;font-weight:700;border:1px solid var(--line);border-radius:5px;padding:3px 0}
+.ccsum{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}.ccsum .big{font-size:18px;font-weight:800}
+.ccstatus{padding:10px 12px;border-radius:9px;font-size:14px}.ccstatus.ok{background:#e3f3e8;color:#1f6b3d}.ccstatus.bad{background:#fde4e1;color:#9b1c13}.ccstatus.info{background:#eef2f7;color:#334}
+.ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
+.csrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.csrow h4{margin:0 0 6px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+@media (max-width:860px){.ccgrid{grid-template-columns:1fr}.ccimg{position:static}}
 </style>
 </head>
 <body>
@@ -499,6 +520,9 @@ dialog.ckdlg.spdlg{width:min(1000px,96vw);max-height:90vh}
   </main>
 </div>
 
+<dialog id="ccDialog" class="ckdlg spdlg ccdlg"><div class="spwrap"><div class="ckdlg-title" id="ccTitle">Check paper card</div><div id="ccBody"></div></div></dialog>
+<dialog id="csDialog" class="ckdlg spdlg ccdlg"><div class="spwrap"><div class="ckdlg-title" id="csTitle">Cross-check scores from CSV</div><div id="csBody"></div></div></dialog>
+<dialog id="ocDialog" class="ckdlg"><div class="spwrap" id="ocBody"></div></dialog>
 <dialog id="prDialog" class="ckdlg spdlg"><div class="spwrap"><div class="ckdlg-title" id="prTitle">Procurement</div><p class="ckdlg-intro">Items bought for this event only. Changes save automatically.</p>
   <div id="prBody"></div>
   <div class="ckdlg-actions"><button class="btn btn-primary" type="button" id="prAdd">+ Add item</button><button class="btn btn-ghost" type="button" id="prCsv">Export CSV</button><button class="btn btn-ghost" type="button" id="prClose">Close</button></div></div></dialog>
@@ -719,6 +743,8 @@ function renderScores(){
     <div class="h-row"><h2>Scores</h2><span class="sub">Live from players' cards · click a player for the hole-by-hole card</span></div><div class="hr"></div>
     <div class="toolbar"><div class="chips" id="sChips">${chipsHTML(S.sCity,false)}</div><span class="spacer"></span>
       <button class="btn btn-ghost" id="sRefresh">Refresh</button>
+      <button class="btn btn-ghost" id="sCsvCheck">Cross-check CSV</button>
+      <button class="btn btn-ghost" id="sOcrSet" title="Card reader settings">Card reader</button>
       <button class="btn btn-ghost" id="sCsv" ${rows.length?"":"disabled"}>Export CSV · ${esc(c.name)}</button>
       <button class="btn btn-primary" id="sCsvAll">Export CSV · all events</button></div>
     <div class="method">
@@ -730,20 +756,298 @@ function renderScores(){
         <dt>Players</dt><dd>${playersIn(c.id).length} registered${rows.length?` · ${rows.length} on the card · ${rows.filter(r=>r.sc.complete).length} finished`:""}</dd>
         <dt>Scoring</dt><dd>${c.scoring_open ? '<span class="pill next">Open to players</span>' : '<span class="pill up">Closed</span>'} ${ev?`<span class="muted" style="font-size:11.5px">updated ${ev.at.toTimeString().slice(0,5)}</span>`:""}</dd></dl></div>
     </div>
+    ${ccBanner(c.id)}
     ${rows.length ? `<div class="tablewrap"><table><thead><tr>
         <th>Pos</th><th>Player</th><th>Home club</th><th class="r">Thru</th>${R>1?Array.from({length:R},(_,i)=>`<th class="r">R${i+1}</th>`).join(""):""}<th class="r">Gross</th>
         <th class="r">${f.handicap==="system36"?"Super 36 HCP":f.handicap==="peoria"?"Peoria HCP":"HCP"}</th>${f.scoring==="stroke"&&f.basis==="net"&&f.handicap!=="none"?'<th class="r">Net</th>':""}
-        <th class="r">${esc(G.metricLabel(f))}</th><th>Almaty</th></tr></thead><tbody>
+        <th class="r">${esc(G.metricLabel(f))}</th><th>Almaty</th><th>Paper card</th></tr></thead><tbody>
       ${rows.map((r,i) => { const q = r.sc.complete && i < f.qualifiers; return `<tr class="clickable ${q?"qual":""} ${i===f.qualifiers-1?"cut":""}" data-pid="${r.id}" title="View hole-by-hole scorecard"><td class="pos num">${r.tie?"T":""}${r.pos}</td><td><b>${esc(r.full_name)}</b></td><td>${esc(r.home_club)}</td>
         <td class="r num">${r.sc.complete?"F":`${r.sc.played}/${r.sc.total}`}</td>${R>1?r.sc.rounds.map(x=>`<td class="r num">${x.played?x.gross:"–"}</td>`).join(""):""}<td class="r num">${r.sc.gross||"–"}</td>
         <td class="r num">${f.handicap==="none"?"0":(r.sc.hcpKnown?r.sc.hcp:`<span class="muted">~${r.sc.hcp}</span>`)}</td>${f.scoring==="stroke"&&f.basis==="net"&&f.handicap!=="none"?`<td class="r num">${r.sc.net ?? "–"}</td>`:""}
-        <td class="r num net">${G.fmtMetric(f, r.sc)}</td><td>${q?'<span class="pill q">Qualified</span>':""}</td></tr>`; }).join("")}
+        <td class="r num net">${G.fmtMetric(f, r.sc)}</td><td>${q?'<span class="pill q">Qualified</span>':""}</td><td class="ccell">${ccPill(r.id)}<button type="button" class="btn btn-ghost cc-btn" data-cc="${r.id}" title="Photograph or upload this player's paper card and compare it with the entered scores">Check card</button></td></tr>`; }).join("")}
       </tbody></table></div><div class="count">Top ${f.qualifiers} finished cards (shaded) qualify for the IGC International Championship, Almaty · June 2027. ~ = handicap still being worked out from an unfinished card.</div>`
     : `<div class="empty"><h3>No scores yet for ${esc(c.name)}</h3><p>${regOf(c)==="open" ? `${playersIn(c.id).length} players registered.` : "Registration opens closer to the event."} Scores appear here live as players enter their cards${c.scoring_open?"":" once scoring is opened in Event setup"}.</p></div>`}`;
   v.querySelectorAll("#sChips .chip").forEach(b => b.addEventListener("click", async () => { S.sCity = +b.dataset.c; if(!S.ev.get(S.sCity) && playersIn(S.sCity).length) await loadEvent(S.sCity); renderScores(); }));
-  $("#sRefresh").addEventListener("click", async () => { await loadEvent(c.id); renderScores(); toast("Scores refreshed"); });
+  $("#sRefresh").addEventListener("click", async () => { await loadEvent(c.id); await loadChecks(c.id); renderScores(); toast("Scores refreshed"); });
+  v.querySelectorAll(".cc-btn").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); openCheck(+b.dataset.cc); }));
+  v.querySelectorAll("[data-ccopen]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); openCheck(+b.dataset.ccopen); }));
+  $("#sCsvCheck").addEventListener("click", () => openCsvCheck(c.id));
+  $("#sOcrSet").addEventListener("click", openOcrSettings);
+  if(!S.cc.has(c.id)) loadChecks(c.id).then(() => { if(S.sCity === c.id && document.querySelector("#v-scores .h-row")) renderScores(); });
   $("#sCsv").addEventListener("click", () => exportCSV([c]));
   $("#sCsvAll").addEventListener("click", async () => { const cs = legs().filter(x => playersIn(x.id).length); for(const x of cs) if(!S.ev.get(x.id)) await loadEvent(x.id); exportCSV(cs); });
+}
+
+
+/* ---------- paper card checks (photo + CSV) ---------- */
+S.cc = new Map();   // city -> Map(pid -> check)
+async function loadChecks(cid){
+  const ids = playersIn(cid).map(p => p.id); const m = new Map();
+  if(ids.length){
+    const { data, error } = await supabaseClient.from("card_checks").select("*").eq("city_id", cid);
+    if(!error) (data || []).forEach(r => { if(r.round === 1 || !m.has(r.participant_id)) m.set(r.participant_id, r); });
+  }
+  S.cc.set(cid, m);
+}
+const ccOf = pid => { const p = S.players.find(x => x.id === pid); return p ? S.cc.get(p.city_id)?.get(pid) : null; };
+function ccPill(pid){
+  const k = ccOf(pid); if(!k) return "";
+  const n = (k.mismatches || []).length;
+  const t = k.status === "verified" ? ["ok","Verified"] : k.status === "corrected" ? ["fix","Corrected"] : ["bad", `${n} mismatch${n===1?"":"es"}`];
+  return `<button type="button" class="ccp ${t[0]}" data-ccopen="${pid}" title="Checked from ${k.source} by ${esc(k.checked_by||"admin")}">${t[1]}</button>`;
+}
+function ccBanner(cid){
+  const m = S.cc.get(cid); if(!m) return "";
+  const bad = [...m.values()].filter(k => k.status === "mismatch");
+  if(!bad.length) return "";
+  return `<div class="ccbanner" role="status"><span>⚠</span><span><b>${bad.length} paper card${bad.length===1?"":"s"} need${bad.length===1?"s":""} checking:</b> the card doesn't match what the player entered.</span>
+    ${bad.slice(0,6).map(k => { const p = S.players.find(x => x.id === k.participant_id); return p ? `<button class="btn btn-ghost" data-ccopen="${p.id}">${esc(p.full_name)}</button>` : ""; }).join("")}</div>`;
+}
+const OCR = {
+  get url(){ try{ return localStorage.getItem("igc.ocr.url") || "http://localhost:11434"; }catch{ return "http://localhost:11434"; } },
+  get model(){ try{ return localStorage.getItem("igc.ocr.model") || "qwen2.5vl:7b"; }catch{ return "qwen2.5vl:7b"; } },
+  set(u, m){ try{ localStorage.setItem("igc.ocr.url", u); localStorage.setItem("igc.ocr.model", m); }catch{} }
+};
+async function ocrPing(){
+  try{ const r = await fetch(OCR.url + "/api/tags", { signal: AbortSignal.timeout(4000) }); if(!r.ok) return { ok:false, why:`reader answered ${r.status}` };
+    const j = await r.json(); const names = (j.models || []).map(m => m.name);
+    return names.some(n => n === OCR.model || n.startsWith(OCR.model)) ? { ok:true, names } : { ok:false, why:`model ${OCR.model} isn't downloaded`, names };
+  }catch(e){ return { ok:false, why:"can't reach the card reader on this computer" }; }
+}
+function ocrHelp(why){
+  const origin = location.origin;
+  return `<div class="ccstatus bad"><b>Card reader not available:</b> ${esc(why)}.</div>
+  <p class="muted" style="font-size:13px;margin:8px 0 4px">The card reader runs free and offline on the admin's own computer (Mac) using Ollama, so card photos never leave the laptop. One-time setup, in Terminal:</p>
+  <pre style="background:#f4f6f2;padding:10px;border-radius:8px;font-size:12.5px;white-space:pre-wrap;margin:0">ollama pull ${esc(OCR.model)}
+launchctl setenv OLLAMA_ORIGINS "${esc(origin)}"</pre>
+  <p class="muted" style="font-size:13px;margin:6px 0">Then quit and reopen the Ollama app, and use Chrome. You can still compare by typing the card's scores in by hand below.</p>`;
+}
+function openOcrSettings(){
+  const box = $("#ocBody");
+  box.innerHTML = `<div class="ckdlg-title">Card reader settings</div>
+    <p class="ckdlg-intro">Reads paper scorecards with a free AI model running on this computer (Ollama). Nothing is uploaded.</p>
+    <label class="fld">Reader address<input id="ocUrl" value="${esc(OCR.url)}"></label>
+    <label class="fld">Vision model<input id="ocModel" value="${esc(OCR.model)}" list="ocModels"></label>
+    <datalist id="ocModels"><option value="qwen2.5vl:7b"><option value="qwen2.5vl:3b"><option value="qwen3-vl:8b"></datalist>
+    <div id="ocStat" class="ccstatus info">Checking…</div>
+    <div class="ckdlg-actions"><button class="btn btn-primary" id="ocSave">Save &amp; test</button><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
+  const test = async () => { const r = await ocrPing(); $("#ocStat").outerHTML = r.ok ? `<div id="ocStat" class="ccstatus ok">Connected · ${esc(OCR.model)} is ready.</div>` : `<div id="ocStat">${ocrHelp(r.why)}</div>`; };
+  $("#ocSave").onclick = () => { OCR.set($("#ocUrl").value.trim().replace(/\/$/,""), $("#ocModel").value.trim()); test(); };
+  $("#ocClose").onclick = () => $("#ocDialog").close();
+  $("#ocDialog").showModal(); test();
+}
+async function shrinkImage(file, max = 1600){
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+  const k = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement("canvas");
+  cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+  cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+  return cv.toDataURL("image/jpeg", 0.9);
+}
+function parseScores(txt, n){
+  const t = String(txt).replace(/```(json)?/g, "");
+  const m = t.match(/\{[\s\S]*\}/);
+  if(m){ try{ const j = JSON.parse(m[0]); const a = j.scores || j.holes || j.strokes; const nm = j.name || j.player || "";
+    if(Array.isArray(a)) return { name: String(nm), scores: a.slice(0, n).map(v => { const x = parseInt(v, 10); return x >= 1 && x <= 15 ? x : null; }) }; }catch{} }
+  const nums = (t.match(/\b\d{1,2}\b/g) || []).map(Number).filter(x => x >= 1 && x <= 15);
+  return { name: "", scores: nums.length >= n ? nums.slice(0, n) : null };
+}
+async function ocrRead(dataUrl, p, c, holes){
+  const n = holes.length, par = holes.map(h => h.par).join(", ");
+  const prompt = `This is a photo of a handwritten golf scorecard. Find the row for the player named "${p.full_name}" (it may be written as initials or a short name; if there is only one player row, use it). Read the strokes written for holes 1 to ${n}, in hole order. The course par for holes 1-${n} is: ${par}. Ignore printed rows (HOLE, PAR, INDEX, YARDS), totals (OUT, IN, TOT) and other players. Return ONLY JSON like {"name":"<name as written>","scores":[${Array.from({length:n},()=>"<int>").join(",")}]} with exactly ${n} integers; use null for a box you cannot read. Do not explain.`;
+  const r = await fetch(OCR.url + "/api/chat", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: OCR.model, stream: false, format: "json", options: { temperature: 0, num_predict: 300 }, think: false,
+      messages: [{ role: "user", content: prompt, images: [dataUrl.split(",")[1]] }] }) });
+  if(!r.ok) throw new Error(`card reader answered ${r.status}`);
+  const j = await r.json(); return parseScores(j.message?.content || "", n);
+}
+function enteredFor(pid, cid, round, holes){ const card = S.ev.get(cid)?.cards.get(pid) || new Map(); return holes.map(h => card.get(`${round}-${h.hole}`) ?? null); }
+const CC = {};
+async function openCheck(pid, round = 1){
+  const p = S.players.find(x => x.id === pid); if(!p) return;
+  const c = cityById(p.city_id), holes = courseOf(c);
+  if(!holes.length) return toast("Set up the course card for this event first (Event setup).");
+  if(!S.ev.get(c.id)) await loadEvent(c.id);
+  Object.assign(CC, { pid, round, p, c, holes, img: null, read: null, name: "", prior: ccOf(pid) });
+  $("#ccTitle").textContent = `Check paper card · ${p.full_name}`;
+  $("#ccDialog").showModal();
+  drawCheckStart();
+}
+function drawCheckStart(){
+  const { c, prior } = CC, R = c.rounds_count || 1;
+  $("#ccBody").innerHTML = `
+    ${prior ? `<div class="ccstatus ${prior.status==="mismatch"?"bad":prior.status==="verified"?"ok":"info"}">Last check: <b>${prior.status==="mismatch"?`${(prior.mismatches||[]).length} mismatched holes`:prior.status}</b> from ${esc(prior.source)} by ${esc(prior.checked_by||"admin")}, ${new Date(prior.checked_at).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}.${prior.status==="mismatch"?` <button class="btn btn-ghost" id="ccResume" style="font-size:12px;padding:3px 9px">Fix those holes</button>`:""}</div>` : ""}
+    ${R > 1 ? `<label class="fld" style="max-width:200px">Round<select id="ccRound">${Array.from({length:R},(_,i)=>`<option value="${i+1}" ${CC.round===i+1?"selected":""}>Round ${i+1}</option>`).join("")}</select></label>` : ""}
+    <div class="ccdrop" id="ccDrop">
+      <p style="margin:0">Photograph the signed paper card flat, in good light, with the whole card in the frame.</p>
+      <div class="row"><label class="btn btn-primary">Open camera<input type="file" accept="image/*" capture="environment" id="ccCam" hidden></label>
+        <label class="btn btn-ghost">Upload photo<input type="file" accept="image/*" id="ccFile" hidden></label>
+        <button class="btn btn-ghost" id="ccManual">Type the card in by hand</button></div>
+      <p class="muted" style="margin:0;font-size:12.5px">or drop a photo here · read on this computer by ${esc(OCR.model)}</p>
+    </div>
+    <div class="ckdlg-actions"><button class="btn btn-ghost" id="ccCancel">Close</button></div>`;
+  $("#ccRound")?.addEventListener("change", e => { CC.round = +e.target.value; });
+  $("#ccCancel").onclick = () => $("#ccDialog").close();
+  $("#ccManual").onclick = () => { CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(); };
+  $("#ccResume")?.addEventListener("click", () => { CC.read = (CC.prior.read_scores || []).slice(); CC.manual = CC.prior.source !== "photo"; drawCompare(); });
+  const take = f => f && runRead(f);
+  $("#ccCam").onchange = e => take(e.target.files[0]); $("#ccFile").onchange = e => take(e.target.files[0]);
+  const d = $("#ccDrop"); d.ondragover = e => { e.preventDefault(); d.style.borderColor = "#1f3d2b"; }; d.ondragleave = () => d.style.borderColor = "";
+  d.ondrop = e => { e.preventDefault(); take(e.dataTransfer.files[0]); };
+}
+async function runRead(file){
+  CC.manual = false;
+  $("#ccBody").innerHTML = `<div class="ccstatus info" id="ccMsg">Preparing the photo…</div><div class="ccprog" style="margin-top:10px"><i id="ccBar"></i></div><p class="muted" style="font-size:12.5px">The first card can take up to a minute while the model loads; later cards are quicker.</p>`;
+  try{
+    CC.img = await shrinkImage(file); $("#ccBar").style.width = "15%";
+    $("#ccMsg").textContent = "Checking the card reader…";
+    const ping = await ocrPing();
+    if(!ping.ok){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(ocrHelp(ping.why)); return; }
+    $("#ccMsg").textContent = `Reading the card with ${OCR.model}…`; $("#ccBar").style.width = "35%";
+    const tick = setInterval(() => { const b = $("#ccBar"); if(b) b.style.width = Math.min(92, parseFloat(b.style.width) + 4) + "%"; }, 1500);
+    let out; try{ out = await ocrRead(CC.img, CC.p, CC.c, CC.holes); } finally { clearInterval(tick); }
+    CC.read = out.scores || CC.holes.map(() => null); CC.name = out.name || "";
+    drawCompare(out.scores ? "" : `<div class="ccstatus bad">The reader couldn't pick out this player's scores. Type them from the photo below.</div>`);
+  }catch(e){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(`<div class="ccstatus bad">Couldn't read the card: ${esc(e.message)}. Type the scores from the photo.</div>`); }
+}
+function drawCompare(note = ""){
+  const { p, c, holes, round } = CC, entered = enteredFor(p.id, c.id, round, holes), read = CC.read;
+  const nines = holes.length > 9 ? [holes.slice(0,9), holes.slice(9)] : [holes];
+  const mm = () => holes.map((h,i) => i).filter(i => read[i] != null && entered[i] != null ? read[i] !== entered[i] : read[i] !== entered[i]);
+  const table = () => nines.map(hs => `<table class="cmp"><thead><tr><th></th>${hs.map(h => `<th>${h.hole}</th>`).join("")}<th>${hs.length===9&&holes.length>9?(hs[0].hole===1?"Out":"In"):"Tot"}</th></tr></thead><tbody>
+      <tr><td class="lab">Par</td>${hs.map(h => `<td>${h.par}</td>`).join("")}<td>${hs.reduce((a,h)=>a+h.par,0)}</td></tr>
+      <tr><td class="lab">Player entered</td>${hs.map(h => { const i = holes.indexOf(h); return `<td>${entered[i] ?? '<span class="muted">–</span>'}</td>`; }).join("")}<td><b>${hs.reduce((a,h)=>a+(entered[holes.indexOf(h)]||0),0)||"–"}</b></td></tr>
+      <tr><td class="lab">${CC.manual?"Paper card (type)":"Read from card"}</td>${hs.map(h => { const i = holes.indexOf(h); const bad = read[i] !== entered[i];
+        return `<td class="${bad?"mm":"ok"}" data-i="${i}"><input inputmode="numeric" maxlength="2" value="${read[i] ?? ""}" aria-label="Hole ${h.hole} on paper card"></td>`; }).join("")}<td><b class="rtot">${hs.reduce((a,h)=>a+(read[holes.indexOf(h)]||0),0)||"–"}</b></td></tr>
+    </tbody></table>`).join('<div style="height:8px"></div>');
+  const render = () => {
+    const bad = mm();
+    $("#ccBody").innerHTML = `${note}<div class="${CC.img?"ccgrid":""}">
+      ${CC.img ? `<div class="ccimg"><div class="ccimgwrap"><img src="${CC.img}" alt="Photo of the paper card" id="ccPhoto"></div><p class="muted" style="font-size:12px">Click the photo to zoom.${CC.name?` Name read on card: <b>${esc(CC.name)}</b>`:""}</p></div>` : ""}
+      <div><div id="ccVerdict"></div>${table()}
+        <p class="muted" style="font-size:12.5px;margin:8px 0 0">Red boxes don't match what the player entered. Check them against the paper card and correct the bottom row if the reader got a digit wrong. On save, the paper card's numbers become the official scores.</p>
+        <div class="ckdlg-actions" style="justify-content:flex-start;flex-wrap:wrap">
+          <button class="btn btn-primary" id="ccSave"></button>
+          <button class="btn btn-ghost" id="ccFlag" title="Leave it flagged for another admin to check">Flag for manual check</button>
+          <button class="btn btn-ghost" id="ccAgain">Use another photo</button>
+          <button class="btn btn-ghost" id="ccClose2">Close</button></div></div></div>`;
+    const upd = () => {
+      const b = mm(), blanks = read.filter(v => v == null).length;
+      $("#ccVerdict").innerHTML = !b.length ? `<div class="ccstatus ok"><b>All ${holes.length} holes match.</b> The paper card agrees with the player's entered scores.</div>`
+        : `<div class="ccstatus bad"><b>${b.length} hole${b.length===1?" doesn't":"s don't"} match:</b> ${b.map(i => `hole ${holes[i].hole} (entered ${entered[i] ?? "–"}, card ${read[i] ?? "?"})`).join(", ")}.${blanks?` ${blanks} box${blanks===1?"":"es"} still empty.`:""}</div>`;
+      $("#ccSave").textContent = !b.length ? "Mark card verified" : "Save card scores as official";
+      $("#ccSave").disabled = b.length > 0 && blanks > 0;
+      $("#ccSave").title = $("#ccSave").disabled ? "Fill every box from the paper card first" : "";
+      $("#ccBody").querySelectorAll("td[data-i]").forEach(td => { const i = +td.dataset.i; td.className = read[i] !== entered[i] ? "mm" : "ok"; });
+      $("#ccBody").querySelectorAll("table.cmp").forEach((t, k) => { const hs = nines[k]; const s = hs.reduce((a,h)=>a+(read[holes.indexOf(h)]||0),0); t.querySelector(".rtot").textContent = s || "–"; });
+    };
+    $("#ccBody").querySelectorAll("td[data-i] input").forEach(inp => inp.addEventListener("input", () => {
+      const i = +inp.closest("td").dataset.i, v = parseInt(inp.value, 10); read[i] = v >= 1 && v <= 15 ? v : null; upd();
+      if(inp.value.length >= (v >= 2 ? 1 : 2)){ const all = [...$("#ccBody").querySelectorAll("td[data-i] input")]; const nx = all[all.indexOf(inp)+1]; if(nx && v > 1){ nx.focus(); nx.select(); } }
+    }));
+    $("#ccPhoto")?.addEventListener("click", e => e.target.classList.toggle("zoom"));
+    $("#ccAgain").onclick = drawCheckStart; $("#ccClose2").onclick = () => $("#ccDialog").close();
+    $("#ccFlag").onclick = () => saveCheck("mismatch");
+    $("#ccSave").onclick = () => saveCheck(mm().length ? "corrected" : "verified");
+    upd();
+  };
+  render();
+}
+async function saveCheck(status){
+  const { p, c, holes, round, read } = CC, entered = enteredFor(p.id, c.id, round, holes);
+  const mism = holes.map((h,i) => ({ hole: h.hole, entered: entered[i], card: read[i] })).filter(x => x.entered !== x.card);
+  if(status === "corrected"){
+    const up = mism.filter(x => x.card != null).map(x => ({ participant_id: p.id, round, hole: x.hole, strokes: x.card }));
+    if(up.length){ const { error } = await supabaseClient.from("hole_scores").upsert(up); if(error) return toast("Couldn't save scores: " + error.message); }
+  }
+  const rec = { participant_id: p.id, round, city_id: c.id, source: CC.manual ? "manual" : "photo", status, read_scores: read, mismatches: status === "verified" ? [] : mism, checked_by: meName(), checked_at: new Date().toISOString() };
+  const { error } = await supabaseClient.from("card_checks").upsert(rec);
+  if(error) return toast("Couldn't save the check: " + error.message);
+  if(!S.cc.has(c.id)) S.cc.set(c.id, new Map()); S.cc.get(c.id).set(p.id, rec);
+  await loadEvent(c.id); $("#ccDialog").close(); renderScores();
+  toast(status === "verified" ? `${p.full_name}: card verified` : status === "corrected" ? `${p.full_name}: ${mism.length} hole${mism.length===1?"":"s"} corrected from the paper card` : `${p.full_name}: flagged for manual check`);
+}
+
+/* ---- whole-event CSV cross-check ---- */
+const CS = {};
+function openCsvCheck(cid){
+  const c = cityById(cid), holes = courseOf(c);
+  if(!holes.length) return toast("Set up the course card for this event first (Event setup).");
+  Object.assign(CS, { c, holes, rows: null });
+  $("#csTitle").textContent = `Cross-check scores from CSV · IGC ${c.name}`;
+  $("#csBody").innerHTML = `<p class="ckdlg-intro">Upload the event's scores typed from the paper cards (CSV or Excel). Each player is matched by email, or by name, and compared hole by hole with what they entered. Nothing changes until you choose.</p>
+    <div class="ccdrop" id="csDrop"><p style="margin:0">Columns needed: <b>Player</b> (or Email) and <b>H1 … H${holes.length}</b>. The site's own Export CSV file works too.</p>
+      <label class="btn btn-primary">Choose file<input type="file" accept=".csv,.tsv,.txt,.xlsx,.xls" id="csFile" hidden></label>
+      <textarea id="csPaste" rows="4" placeholder="…or paste the rows here" style="width:100%;max-width:640px;font:12.5px ui-monospace,monospace;border:1px solid var(--line);border-radius:8px;padding:8px"></textarea>
+      <button class="btn btn-ghost" id="csGo">Compare pasted rows</button></div>
+    <div class="ckdlg-actions"><button class="btn btn-ghost" id="csClose">Close</button></div>`;
+  $("#csClose").onclick = () => $("#csDialog").close();
+  $("#csFile").onchange = async e => { const f = e.target.files[0]; if(!f) return; const t = await readFile(f); csAnalyse(t); };
+  $("#csGo").onclick = () => csAnalyse($("#csPaste").value);
+  const d = $("#csDrop"); d.ondragover = e => e.preventDefault(); d.ondrop = async e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if(f) csAnalyse(await readFile(f)); };
+  $("#csDialog").showModal();
+}
+function csAnalyse(text){
+  const { c, holes } = CS, n = holes.length;
+  const grid = IMP.parseDelimited(text || "").filter(r => r.some(x => String(x).trim()));
+  if(grid.length < 2) return toast("No rows found in that file");
+  const head = grid[0].map(h => String(h).trim().toLowerCase());
+  const col = re => head.findIndex(h => re.test(h));
+  const iName = col(/^(player|name|full ?name|player name|golfer)$/), iMail = col(/e-?mail/), iRound = col(/^round$/);
+  const hc = h => { let i = head.findIndex(x => x === `r1 h${h}`); if(i < 0) i = head.findIndex(x => new RegExp(`^(h|hole ?)${h}$`).test(x)); if(i < 0) i = head.findIndex(x => x === String(h)); return i; };
+  const hcols = holes.map(h => hc(h.hole));
+  if(hcols.some(i => i < 0)) return toast(`Couldn't find columns for every hole (need H1 … H${n})`);
+  if(iName < 0 && iMail < 0) return toast("Need a Player or Email column");
+  const norm = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const ps = playersIn(c.id), rows = [];
+  grid.slice(1).forEach(r => {
+    const name = iName >= 0 ? String(r[iName] || "").trim() : "", mail = iMail >= 0 ? String(r[iMail] || "").trim().toLowerCase() : "";
+    if(!name && !mail) return;
+    const round = iRound >= 0 ? (parseInt(r[iRound], 10) || 1) : 1;
+    const p = (mail && ps.find(x => (x.email || "").toLowerCase() === mail)) || (name && (ps.find(x => norm(x.full_name) === norm(name)) || ps.find(x => norm(x.full_name).startsWith(norm(name)) && norm(name).length > 3)));
+    const card = hcols.map(i => { const v = parseInt(r[i], 10); return v >= 1 && v <= 15 ? v : null; });
+    if(!p){ rows.push({ name: name || mail, missing: true }); return; }
+    const entered = enteredFor(p.id, c.id, round, holes);
+    const mism = holes.map((h,i) => ({ hole: h.hole, entered: entered[i], card: card[i] })).filter(x => x.entered !== x.card && x.card != null);
+    rows.push({ p, round, card, entered, mism, none: entered.every(v => v == null), use: true });
+  });
+  CS.rows = rows; csDraw();
+}
+function csDraw(){
+  const { c, holes } = CS, R = CS.rows;
+  const ok = R.filter(r => r.p && !r.mism.length), bad = R.filter(r => r.p && r.mism.length), miss = R.filter(r => r.missing);
+  const notInCsv = playersIn(c.id).filter(p => hasCard(p) && !R.some(r => r.p && r.p.id === p.id));
+  $("#csBody").innerHTML = `<div class="ccsum"><span class="big">${R.filter(r=>r.p).length}</span> players compared ·
+      <span class="ccp ok">${ok.length} match</span><span class="ccp bad">${bad.length} with mismatches</span>${miss.length?`<span class="ccp fix">${miss.length} not found in this event</span>`:""}${notInCsv.length?`<span class="muted">${notInCsv.length} players with scores aren't in the file</span>`:""}</div>
+    ${bad.map((r,k) => `<div class="csrow"><h4>${esc(r.p.full_name)} <span class="ccp bad">${r.mism.length} hole${r.mism.length===1?"":"s"}</span>${r.none?'<span class="muted">player entered nothing</span>':""}
+        <label style="margin-left:auto;font-weight:500;font-size:13px"><input type="checkbox" data-use="${k}" ${r.use?"checked":""}> Use the CSV (paper card) scores</label></h4>
+      <div style="font-size:13px">${r.mism.map(x => `Hole ${x.hole}: entered <b>${x.entered ?? "–"}</b> → card <b>${x.card}</b>`).join(" · ")}</div>
+      <button class="btn btn-ghost" data-edit="${r.p.id}" style="font-size:12px;padding:3px 9px;margin-top:6px">Edit hole by hole</button></div>`).join("")}
+    ${miss.length ? `<p class="muted" style="font-size:13px">Not matched to a registered player: ${miss.map(r => esc(r.name)).join(", ")}</p>` : ""}
+    <div class="ckdlg-actions" style="justify-content:flex-start;flex-wrap:wrap">
+      <button class="btn btn-primary" id="csApply">${bad.length ? "Apply: fix ticked players, mark the rest verified" : "Mark all matching cards verified"}</button>
+      <button class="btn btn-ghost" id="csFlag" ${bad.length?"":"disabled"}>Only flag mismatches for manual check</button>
+      <button class="btn btn-ghost" id="csClose">Close</button></div>`;
+  $("#csBody").querySelectorAll("[data-use]").forEach(b => b.onchange = () => { bad[+b.dataset.use].use = b.checked; });
+  $("#csBody").querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { const r = R.find(x => x.p && x.p.id === +b.dataset.edit);
+    $("#csDialog").close(); openCheck(r.p.id, r.round).then(() => { CC.read = r.card.slice(); CC.manual = true; drawCompare(); }); });
+  $("#csClose").onclick = () => $("#csDialog").close();
+  $("#csFlag").onclick = () => csApply(false);
+  $("#csApply").onclick = () => csApply(true);
+}
+async function csApply(fix){
+  const { c } = CS, R = CS.rows.filter(r => r.p), now = new Date().toISOString(), me = meName();
+  const hs = [], recs = [];
+  R.forEach(r => {
+    const doFix = fix && r.use && r.mism.length;
+    if(doFix) r.mism.forEach(x => hs.push({ participant_id: r.p.id, round: r.round, hole: x.hole, strokes: x.card }));
+    recs.push({ participant_id: r.p.id, round: r.round, city_id: c.id, source: "csv", status: !r.mism.length ? "verified" : doFix ? "corrected" : "mismatch",
+      read_scores: r.card, mismatches: r.mism, checked_by: me, checked_at: now });
+  });
+  for(let i = 0; i < hs.length; i += 400){ const { error } = await supabaseClient.from("hole_scores").upsert(hs.slice(i, i+400)); if(error) return toast("Couldn't save scores: " + error.message); }
+  for(let i = 0; i < recs.length; i += 400){ const { error } = await supabaseClient.from("card_checks").upsert(recs.slice(i, i+400)); if(error) return toast("Couldn't save checks: " + error.message); }
+  await loadEvent(c.id); await loadChecks(c.id); $("#csDialog").close(); renderScores();
+  const f = recs.filter(r => r.status === "corrected").length, m = recs.filter(r => r.status === "mismatch").length;
+  toast(`${recs.length} cards checked · ${recs.length - f - m} verified${f?` · ${f} corrected`:""}${m?` · ${m} flagged`:""}`);
 }
 
 /* ---------- CSV export (opens in Excel / Google Sheets) ---------- */
@@ -1796,7 +2100,7 @@ function drawReg(){
 const VIEWS = ["dashboard","participants","scores","setup","checklist"];
 document.addEventListener("click", e => {
   const row = e.target.closest("[data-pid]");
-  if(row && !e.target.closest("a")){ e.stopPropagation(); openCard(+row.dataset.pid); }
+  if(row && !e.target.closest("a, button, input, label, select")){ e.stopPropagation(); openCard(+row.dataset.pid); }
 }, true);
 document.addEventListener("keydown", e => { if(e.key === "Escape") closeCard(); });
 function route(){
