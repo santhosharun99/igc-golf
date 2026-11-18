@@ -67,6 +67,14 @@ Set per event in **Event setup → Competition format**:
 - Import adds to the list: existing headings and subheadings are reused, and points already there are skipped. **Undo import** removes the last import.
 - Logic lives in `ckimport.js`. Tested on the 438-point ARHM marathon checklist in 4 layouts (clean; renamed/reordered/shuffled with semicolons; grouped section rows; no header with merged-cell blanks): every point landed under the right heading and subheading.
 
+## Registration import (Participants → Import registrations)
+- For Google Form responses: Responses → View in Sheets → File → Download → CSV or Excel, then drop the file into the dialog (or paste the rows).
+- Reads the IGC form questions automatically (Timestamp, Full Name, Email, Phone number, Handicap, T-Shirt Size, Participation Category, the payment confirmation, accommodation, airport transfers). Renamed or reordered questions still map, and any mapping can be changed in the preview.
+- Cleans the data: names in proper case, emails lowercased and checked, phones in +91 format, handicaps like "about 24" → 24 ("NA" / "beginner" are flagged so an admin sets them), sizes normalised (2XL → XXL), yes/no answers read.
+- The same person submitting twice is merged, keeping the latest answers. People already in the event are matched by email or phone and updated, not duplicated, so re-importing a newer export adds only the new registrations.
+- Participants table and CSV now include Category, T-shirt, Payment, Accommodation and Transfer.
+- Logic in `regimport.js` (tested with a Google-Forms-style file using the Ahmedabad form's questions).
+
 ## 3. Updating data
 Use **Table Editor** in Supabase:
 - **Opening a city:** set its `registration_status` to `open`, then add players to `participants` with that `city_id`. Set it to `closed` when entries close.

@@ -335,10 +335,18 @@ table.card9 .tot small{display:block;font-weight:500;font-size:10.5px;color:var(
 .ckempty{padding:14px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
 .inl{font:inherit;width:100%;border:1px solid var(--olive);border-radius:6px;padding:4px 7px;color:var(--ink);background:#fff}
 .ckhead>.hh .inl{color:var(--ink);font-family:var(--serif);font-size:16px}
+.yn{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:5px}.yn.y{background:#e3f1e6;color:#2f7d46}.yn.n{background:#f3f1ec;color:#7b7466}
+.regtbl{border:1px solid var(--line);border-radius:10px;max-height:46vh;overflow:auto}
+.regtbl table{width:100%;border-collapse:collapse;font-size:12.5px}
+.regtbl th{position:sticky;top:0;background:#F7F9F5;color:var(--muted);font-weight:600;text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.regtbl td{padding:6px 8px;border-bottom:1px solid #eef1ec;white-space:nowrap}
+.regtbl td.prob{white-space:normal;color:#a8781a;font-size:11.5px;min-width:160px}
+.tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.04em}
+.tag.new{background:#e3f1e6;color:#2f7d46}.tag.upd{background:#e7f0f2;color:var(--teal)}.tag.same{background:#f1f3ef;color:var(--muted)}
 .impbar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fbf8ee;border:1px solid #eadfb8;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px}
 .impbar .armed{background:#fbeaea;color:#9b2c2c;border-color:#e8c3c3}
 dialog.ckdlg.impdlg{width:min(1080px,96vw);max-height:92vh}
-.impwrap{padding:20px 22px;display:grid;gap:14px}
+.impwrap{padding:20px 22px;display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}.impwrap>*{min-width:0}#impBody{display:grid;gap:14px;min-width:0}#impBody>*{min-width:0}
 .imphead{display:flex;justify-content:space-between;gap:12px}.imphead .cm-close{position:static;flex:none}
 .impsrc{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .drop{border:2px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;display:grid;gap:6px;place-items:center}
@@ -495,6 +503,7 @@ nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{b
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.119.0";
 import * as G from "./scoring.js";
 import * as IMP from "./ckimport.js";
+import * as REG from "./regimport.js";
 
 /* Supabase project "IGC". The publishable key is safe in the browser; Row Level Security protects the data. */
 const SUPABASE_URL = "https://xivczksxmxarkqbwolth.supabase.co";
@@ -530,7 +539,7 @@ async function selectAll(table, columns, order){
 async function loadLive(){
   const [cities, players, scores, holes] = await Promise.all([
     selectAll("cities", "*", "sort_order"),
-    selectAll("participants", "id,city_id,full_name,gender,mobile,email,home_club,handicap_index,playing_handicap,hcp_mode,s36_handicap", "id"),
+    selectAll("participants", "id,city_id,full_name,gender,mobile,email,home_club,handicap_index,playing_handicap,hcp_mode,s36_handicap,tshirt_size,category,payment_status,accommodation,airport_transfer,registered_at,import_batch", "id"),
     selectAll("scores", "*", "participant_id"),
     selectAll("holes", "*", "hole")
   ]);
@@ -645,11 +654,13 @@ function renderParticipants(){
     <div class="h-row"><h2>Participants</h2><span class="sub">Each player is registered for one city leg</span></div><div class="hr"></div>
     <div class="toolbar"><div class="chips" id="pChips"></div><span class="spacer"></span>
       <input type="search" class="search" id="pSearch" placeholder="Search name, club, mobile or email" value="${esc(S.pQuery)}">
+      <button class="btn btn-primary" id="pImport">Import registrations</button>
       <button class="btn btn-ghost" id="pCopy">Copy as CSV</button></div>
     <div class="tablewrap"><table><thead><tr id="pHead"></tr></thead><tbody id="pBody"></tbody></table></div>
     <div class="count" id="pCount"></div>`;
   v.querySelector("#pSearch").addEventListener("input", e => { S.pQuery = e.target.value; fillParticipants(); });
   v.querySelector("#pCopy").addEventListener("click", copyCSV);
+  v.querySelector("#pImport").addEventListener("click", openRegImport);
   fillParticipants();
 }
 function filteredPlayers(){
@@ -662,9 +673,10 @@ function fillParticipants(){
   const chips = $("#pChips"); chips.innerHTML = chipsHTML(S.pCity, true);
   chips.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { S.pCity = b.dataset.c==="all" ? "all" : +b.dataset.c; fillParticipants(); }));
   const all = S.pCity==="all", rows = filteredPlayers();
-  $("#pHead").innerHTML = `<th>#</th><th>Player</th>${all?"<th>City</th>":""}<th>Home club</th><th class="r">HCP index</th><th>Mobile</th><th>Email</th>${!all && S.ev?.get(S.pCity)?.cards.size ? `<th class="r">${G.metricLabel(fmtOf(cityById(S.pCity)))}</th>` : ""}`;
+  const reg = rows.some(p => p.category || p.tshirt_size || p.payment_status);
+  $("#pHead").innerHTML = `<th>#</th><th>Player</th>${all?"<th>City</th>":""}<th>Home club</th><th class="r">HCP index</th><th>Mobile</th><th>Email</th>${reg?"<th>Category</th><th>T-shirt</th><th>Payment</th><th>Accom.</th><th>Transfer</th>":""}${!all && S.ev?.get(S.pCity)?.cards.size ? `<th class="r">${G.metricLabel(fmtOf(cityById(S.pCity)))}</th>` : ""}`;
   const showNet = !all && !!S.ev?.get(S.pCity)?.cards.size;
-  $("#pBody").innerHTML = rows.map((p,i) => `<tr${hasCard(p) ? ` class="clickable" data-pid="${p.id}" title="View scorecard"` : ""}><td class="muted num">${i+1}</td><td><b>${esc(p.full_name)}</b></td>${all?`<td>${esc(cityById(p.city_id).name)}</td>`:""}<td>${esc(p.home_club)}</td><td class="r num">${Number(p.handicap_index).toFixed(1)}</td><td class="num">${esc(p.mobile)}</td><td><a class="mail" href="mailto:${esc(p.email)}">${esc(p.email)}</a></td>${showNet?`<td class="r num net">${metricOf(p)}</td>`:""}</tr>`).join("")
+  $("#pBody").innerHTML = rows.map((p,i) => `<tr${hasCard(p) ? ` class="clickable" data-pid="${p.id}" title="View scorecard"` : ""}><td class="muted num">${i+1}</td><td><b>${esc(p.full_name)}</b></td>${all?`<td>${esc(cityById(p.city_id).name)}</td>`:""}<td>${esc(p.home_club)}</td><td class="r num">${p.handicap_index == null ? '<span class="muted">–</span>' : Number(p.handicap_index).toFixed(1)}</td><td class="num">${esc(p.mobile)}</td><td><a class="mail" href="mailto:${esc(p.email)}">${esc(p.email)}</a></td>${reg?`<td>${esc(p.category||"")}</td><td>${esc(p.tshirt_size||"")}</td><td>${yn(p.payment_status)}</td><td>${yn(p.accommodation)}</td><td>${yn(p.airport_transfer)}</td>`:""}${showNet?`<td class="r num net">${metricOf(p)}</td>`:""}</tr>`).join("")
     || `<tr><td colspan="8" class="muted" style="padding:28px;text-align:center">${
         S.pQuery.trim() ? `No players match “${esc(S.pQuery)}”.`
         : (!all && regOf(cityById(S.pCity))==="not_open") ? `Registration for ${esc(cityById(S.pCity).name)} (${range(cityById(S.pCity))}) opens closer to the event. Players will appear here as they register.`
@@ -672,9 +684,10 @@ function fillParticipants(){
   const c = all ? null : cityById(S.pCity);
   $("#pCount").textContent = `${rows.length} player${rows.length===1?"":"s"}${c ? ` · ${c.name} · ${range(c)} · ${c.venue} · ${REG_LABEL[regOf(c)]}` : " · all cities"}`;
 }
+const yn = v => !v ? '<span class="muted">–</span>' : /^yes/i.test(v) ? `<span class="yn y">${esc(v)}</span>` : /^no/i.test(v) ? `<span class="yn n">${esc(v)}</span>` : esc(v);
 function copyCSV(){
   const rows = filteredPlayers(), q = s => `"${String(s??"").replace(/"/g,'""')}"`;
-  const csv = ["Name,City,Home club,Handicap index,Mobile,Email", ...rows.map(p => [p.full_name, cityById(p.city_id).name, p.home_club, p.handicap_index, p.mobile, p.email].map(q).join(","))].join("\n");
+  const csv = ["Name,City,Home club,Handicap index,Mobile,Email,Category,T-shirt,Payment,Accommodation,Airport transfer,Registered at", ...rows.map(p => [p.full_name, cityById(p.city_id).name, p.home_club, p.handicap_index, p.mobile, p.email, p.category, p.tshirt_size, p.payment_status, p.accommodation, p.airport_transfer, p.registered_at ? new Date(p.registered_at).toLocaleString("en-IN") : ""].map(q).join(","))].join("\n");
   navigator.clipboard.writeText(csv).then(() => toast(`Copied ${rows.length} rows — paste into Excel or Sheets`), () => toast("Couldn't copy — your browser blocked clipboard access"));
 }
 
@@ -1430,6 +1443,8 @@ setInterval(async () => {
 const IM = { text: "", res: null, mapping: null, name: "" };
 function openImport(){
   IM.text = ""; IM.res = null; IM.mapping = null; IM.name = "";
+  $("#impDialog").querySelector(".ckdlg-title").textContent = "Import checklist";
+  $("#impDialog").querySelector(".ckdlg-intro").textContent = "CSV, Excel or a paste from any sheet. Messy is fine: you'll see exactly how it will be arranged before anything is saved.";
   drawImport(); $("#impDialog").showModal();
   $("#impClose").onclick = () => $("#impDialog").close();
 }
@@ -1516,6 +1531,69 @@ async function runImport(r, addPeople){
   r.tree.forEach(h => { const pid = hId.get(h.title.toLowerCase()); h.points.forEach(p => pt(p, pid)); h.subs.forEach(s => s.points.forEach(p => pt(p, sId.get(sKey(pid, s.title))))); });
   await ins(pRows);
   return { added: pRows.length, skipped };
+}
+
+/* ---------- registration import (Google Form export) ---------- */
+const RG = { text: "", name: "", mapping: null, res: null, city: null };
+function openRegImport(){
+  RG.text = ""; RG.res = null; RG.mapping = null;
+  RG.city = S.pCity !== "all" ? S.pCity : (legs().find(c => regOf(c) === "open" && !playersIn(c.id).length) || legs().find(c => regOf(c) === "open") || legs()[0]).id;
+  $("#impDialog").querySelector(".ckdlg-title").textContent = "Import registrations";
+  $("#impDialog").querySelector(".ckdlg-intro").textContent = "Download the Google Form responses (Responses → View in Sheets → File → Download → CSV or Excel) and drop the file here. You'll see every person before anything is saved.";
+  drawReg(); $("#impDialog").showModal();
+  $("#impClose").onclick = () => $("#impDialog").close();
+}
+function analyseReg(){ RG.res = RG.text.trim() ? REG.analyseRegs(RG.text, playersIn(RG.city), RG.mapping) : null; if(RG.res) RG.mapping = RG.res.mapping; }
+function drawReg(){
+  const B = $("#impBody"), c = cityById(RG.city), r = RG.res;
+  const evSel = `<label class="hint" style="margin:0;display:flex;gap:8px;align-items:center">Into event <select id="rgCity" style="font:inherit;border:1px solid var(--line);border-radius:8px;padding:6px 8px">${legs().map(x => `<option value="${x.id}" ${x.id===RG.city?"selected":""}>IGC ${esc(x.name)} · ${range(x)}</option>`).join("")}</select></label>`;
+  if(!r){
+    B.innerHTML = `${evSel}<div class="impsrc">
+      <label class="drop" id="rgDrop"><b>Choose the responses file</b><span>or drop it here · .csv, .xlsx</span><input type="file" id="rgFile" accept=".csv,.tsv,.txt,.xlsx,.xls,.ods" hidden></label>
+      <div><textarea id="rgPaste" placeholder="…or copy the rows from the responses sheet (including the header row) and paste here"></textarea><div class="actions" style="margin-top:6px"><button class="btn btn-primary" id="rgPasteGo">Preview paste</button></div></div></div>`;
+    $("#rgCity").addEventListener("change", e => { RG.city = +e.target.value; });
+    const drop = $("#rgDrop"), fin = $("#rgFile");
+    const take = async f => { if(!f) return; try{ RG.name = f.name; RG.text = await readFile(f); RG.mapping = null; analyseReg(); drawReg(); }catch(e){ toast("Couldn't read that file: " + e.message); } };
+    fin.addEventListener("change", () => take(fin.files[0]));
+    drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+    drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); take(e.dataTransfer.files[0]); });
+    $("#rgPasteGo").addEventListener("click", () => { RG.text = $("#rgPaste").value; RG.name = "pasted rows"; RG.mapping = null; analyseReg(); if(RG.res) drawReg(); else toast("Paste the rows first"); });
+    return;
+  }
+  const P = r.people, nNew = P.filter(p => !p.existing_id).length, nUpd = P.length - nNew, nProb = P.filter(p => p.problems.length).length;
+  const rows = IMP.parseDelimited(RG.text).filter(x => x.some(Boolean)).slice(1);
+  const smp = ci => rows.map(x => x[ci]).filter(Boolean).slice(0, 2).join(" · ");
+  B.innerHTML = `
+    <div class="impsum">${evSel}<span>From <b style="font-size:14px">${esc(RG.name)}</b></span><span><b>${nNew}</b> new</span><span><b>${nUpd}</b> already registered</span>${nProb?`<span><b style="color:#a8781a">${nProb}</b> to check</span>`:""}<span class="sp"></span><button class="btn btn-ghost" id="rgRestart">Choose another file</button></div>
+    <div><div class="hint" style="margin:0 0 6px">Form questions → site fields. Change any that look wrong.</div>
+      <div class="maptbl">${r.header.map((h, ci) => `<div class="mapcol ${r.mapping[ci]==="ignore"?"r-ignore":r.mapping[ci]==="full_name"?"r-point":""}"><div class="h" title="${esc(h)}">${esc(h || `Column ${ci+1}`)}</div><div class="s" title="${esc(smp(ci))}">${esc(smp(ci)) || "—"}</div>
+        <select data-ci="${ci}">${Object.entries(REG.FIELDS).map(([k,l]) => `<option value="${k}" ${r.mapping[ci]===k?"selected":""}>${l}</option>`).join("")}</select></div>`).join("")}</div></div>
+    ${r.issues.length || r.dupesInFile ? `<div class="impwarn">${r.issues.map(w => `<div>⚠ ${esc(w)}</div>`).join("")}${r.dupesInFile?`<div>⚠ ${r.dupesInFile} repeat submission${r.dupesInFile>1?"s":""} merged (the latest answers are kept).</div>`:""}</div>` : ""}
+    <div class="regtbl"><table><thead><tr><th></th><th>Name</th><th>Email</th><th>Phone</th><th>HCP</th><th>Category</th><th>T-shirt</th><th>Paid</th><th>Accom.</th><th>Transfer</th><th>Check</th></tr></thead><tbody>
+      ${P.map(p => `<tr><td><span class="tag ${p.existing_id?"upd":"new"}">${p.existing_id?"Update":"New"}</span></td><td><b>${esc(p.full_name||"—")}</b></td><td>${esc(p.email||"")}</td><td>${esc(p.mobile||"")}</td><td>${p.handicap_index ?? "–"}</td><td>${esc(p.category||"")}</td><td>${esc(p.tshirt_size||"")}</td><td>${yn(p.payment_status)}</td><td>${yn(p.accommodation)}</td><td>${yn(p.airport_transfer)}</td><td class="prob">${esc(p.problems.join("; "))}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="impfoot"><label><input type="checkbox" id="rgUpd" checked> Update details for the ${nUpd} already registered</label><span class="sp"></span>
+      <span class="hint" style="margin:0">People are matched by email or phone, so re-importing a newer export only adds the new ones.</span>
+      <button class="btn btn-primary" id="rgGo" ${P.length && !r.issues.length ? "" : "disabled"}>Import into IGC ${esc(c.name)}</button></div>`;
+  $("#rgCity").addEventListener("change", e => { RG.city = +e.target.value; analyseReg(); drawReg(); });
+  B.querySelectorAll(".mapcol select").forEach(sel => sel.addEventListener("change", () => { RG.mapping = r.mapping.slice(); RG.mapping[+sel.dataset.ci] = sel.value; analyseReg(); drawReg(); }));
+  $("#rgRestart").addEventListener("click", () => { RG.res = null; RG.text = ""; drawReg(); });
+  $("#rgGo").addEventListener("click", async e => {
+    const b = e.currentTarget; b.disabled = true; b.textContent = "Importing…";
+    try{
+      const batch = "reg-" + Date.now(), upd = $("#rgUpd").checked;
+      const pick = p => { const o = {}; ["full_name","email","mobile","handicap_index","tshirt_size","category","payment_status","accommodation","airport_transfer","home_club","registered_at"].forEach(k => { if(p[k] != null && p[k] !== "") o[k] = p[k]; }); return o; };
+      const fresh = r.people.filter(p => !p.existing_id).map(p => ({ ...pick(p), city_id: RG.city, import_batch: batch }));
+      for(let i = 0; i < fresh.length; i += 400){ const { error } = await supabaseClient.from("participants").insert(fresh.slice(i, i + 400)); if(error) throw error; }
+      let nu = 0;
+      if(upd) for(const p of r.people.filter(p => p.existing_id)){ const { error } = await supabaseClient.from("participants").update(pick(p)).eq("id", p.existing_id); if(error) throw error; nu++; }
+      $("#impDialog").close();
+      S.players = await selectAll("participants", "id,city_id,full_name,gender,mobile,email,home_club,handicap_index,playing_handicap,hcp_mode,s36_handicap,tshirt_size,category,payment_status,accommodation,airport_transfer,registered_at,import_batch", "id");
+      S.pCity = RG.city; renderParticipants();
+      toast(`${fresh.length} new player${fresh.length===1?"":"s"} added${nu?` · ${nu} updated`:""} to IGC ${cityById(RG.city).name}`);
+    }catch(err){ b.disabled = false; b.textContent = `Import into IGC ${c.name}`; toast("Import failed: " + err.message); }
+  });
 }
 
 /* ---------- routing + shell ---------- */
