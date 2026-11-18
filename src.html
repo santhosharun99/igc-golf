@@ -932,14 +932,15 @@ async function readRowAt(fy){
   const tick = setInterval(() => { const b = $("#ccBar"); if(b) b.style.width = Math.min(92, parseFloat(b.style.width) + 5) + "%"; }, 1200);
   try{
     const n = CC.holes.length, nines = n > 9 ? [9, n - 9] : [n];
-    const best = nines.map(() => null); let name = "";
-    const tries = [[0, 0.045], [-0.008, 0.05], [0.008, 0.04], [0, 0.06]];
-    for(const [dy, half] of tries){
+    const best = nines.map(() => null), seen = nines.map(() => new Map()); let name = "";
+    const tries = [[0, 0.045], [0, 0.055], [0, 0.038], [0.004, 0.045], [-0.004, 0.045]];
+    for(const [i, [dy, half]] of tries.entries()){
+      if(i) $("#ccMsg").textContent = `Double-checking the row (${i + 1} of ${tries.length})…`;
       const out = await ocrReadStrip(await cropStrip(CC.img, fy + dy, half), n);
       if(!name && out.name) name = out.name;
-      out.groups.forEach((g, k) => { if(!best[k] && g.length === nines[k]) best[k] = g; });
+      out.groups.forEach((g, k) => { if(best[k] || g.length !== nines[k] || g.some(v => v == null)) return;
+        const key = g.join(","), c = (seen[k].get(key) || 0) + 1; seen[k].set(key, c); if(c >= 2) best[k] = g; });
       if(best.every(Boolean)) break;
-      $("#ccMsg").textContent = "Double-checking the row…";
     }
     CC.read = best.flatMap((g, k) => g ? g : Array(nines[k]).fill(null)); CC.name = name;
     const got = CC.read.filter(v => v != null).length;
