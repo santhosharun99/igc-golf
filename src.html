@@ -837,18 +837,18 @@ async function ensureReader(launch){
 }
 function openReaderHelp(why, onLive, force){
   const win = /Windows/i.test(navigator.userAgent), mac = /Macintosh|Mac OS X/i.test(navigator.userAgent) && !/iPhone|iPad/i.test(navigator.userAgent);
-  const file = win ? "docs/install-card-reader-windows.bat" : "docs/install-card-reader-mac.command";
+  const file = win ? "docs/install-card-reader-windows.bat" : "docs/install-card-reader-mac.zip";
   const box = $("#ocBody");
   box.innerHTML = `<div class="ckdlg-title">Turn on the card reader on this laptop</div>
     <p style="font-size:14px;margin:4px 0 12px">The card reader isn't running on this ${win ? "Windows laptop" : mac ? "Mac" : "device"} yet. One file sets up everything (Ollama, the card-reading model and the start link), then starts it.</p>
     ${!win && !mac ? `<div class="ccstatus bad">Phones and tablets can't run the card reader. Use a Mac or Windows laptop, or type cards in by hand.</div>` : `
     <div class="rdsteps">
       <div><i class="n">1</i><span><a class="btn btn-primary" href="${file}" download>Download ${win ? "installer for Windows" : "installer for Mac"}</a></span></div>
-      <div><i class="n">2</i><span>${win ? "Open it from Downloads. If Windows says <i>protected your PC</i>, click <b>More info → Run anyway</b>." : "In Downloads, <b>right-click</b> the file → <b>Open</b> → <b>Open</b> (first time only)."}</span></div>
+      <div><i class="n">2</i><span>${win ? "Open it from Downloads. If Windows says <i>protected your PC</i>, click <b>More info → Run anyway</b>." : "In Downloads, double-click the <b>zip</b>, then double-click <b>install-card-reader-mac</b>. If macOS says it can't verify it: click <b>Done</b>, open <b>System Settings → Privacy &amp; Security</b>, scroll down and click <b>Open Anyway</b> (first time only)."}</span></div>
       <div><i class="n">3</i><span>Leave this page open. The first setup downloads the model (about 6 GB, once), so it can take a while; on a laptop that already has it, about a minute.</span></div>
     </div>
     <div class="ccstatus info" id="rdWait"><span class="spin"></span> Waiting for the card reader to come online… this switches on by itself.</div>`}
-    <p class="muted" style="font-size:12.5px;margin:10px 0 0">${win ? `<a href="docs/install-card-reader-mac.command" download>Mac installer</a>` : `<a href="docs/install-card-reader-windows.bat" download>Windows installer</a>`} · <a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="#" id="rdAdv">Advanced settings</a></p>
+    <p class="muted" style="font-size:12.5px;margin:10px 0 0">${win ? `<a href="docs/install-card-reader-mac.zip" download>Mac installer</a>` : `<a href="docs/install-card-reader-windows.bat" download>Windows installer</a>`} · <a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="#" id="rdAdv">Advanced settings</a></p>
     <div class="ckdlg-actions"><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
   let stop = false;
   const close = () => { stop = true; $("#ocDialog").close(); };
@@ -897,7 +897,7 @@ function openOcrSettings(){
     <datalist id="ocModels"><option value="qwen2.5vl:7b"><option value="qwen2.5vl:3b"><option value="qwen3-vl:8b"></datalist>
     <div id="ocStat" class="ccstatus info">Checking…</div>
     <p style="margin:10px 0 4px"><button class="btn btn-ghost" id="ocSetup">Set up a laptop (download installer)</button></p>
-    <p style="font-size:13px;margin:6px 0"><a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="docs/start-card-reader.command" download>Start script (Mac)</a> · <a href="docs/start-card-reader.bat" download>Start script (Windows)</a></p>
+    <p style="font-size:13px;margin:6px 0"><a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="docs/start-card-reader-mac.zip" download>Start script (Mac)</a> · <a href="docs/start-card-reader.bat" download>Start script (Windows)</a></p>
     <div class="ckdlg-actions"><button class="btn btn-primary" id="ocSave">Save &amp; test</button><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
   const test = async () => { const r = await ocrPing(); $("#ocStat").outerHTML = r.ok ? `<div id="ocStat" class="ccstatus ok">Connected · ${esc(OCR.model)} is ready.</div>` : `<div id="ocStat">${ocrHelp(r.why)}</div>`; };
   $("#ocSave").onclick = () => { OCR.set($("#ocUrl").value.trim().replace(/\/$/,""), $("#ocModel").value.trim()); test(); };
@@ -973,7 +973,7 @@ function drawCheckStart(){
     <div class="ccnote" id="ccNote"><b>Card photos are read by the card reader on this laptop.</b>
       Uploading a photo starts it automatically on any laptop where it has been installed once (Ollama + the IGC installer). On a phone, or a laptop without it, type the card in by hand.
       <span id="ccNoteStat" class="muted">Checking the reader…</span>
-      <div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost" href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a><a class="btn btn-ghost" href="docs/install-card-reader-mac.command" download>Installer · Mac</a><a class="btn btn-ghost" href="docs/install-card-reader-windows.bat" download>Installer · Windows</a><button class="btn btn-ghost" id="ccSettings">Card reader settings</button></div></div>
+      <div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost" href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a><a class="btn btn-ghost" href="docs/install-card-reader-mac.zip" download>Installer · Mac</a><a class="btn btn-ghost" href="docs/install-card-reader-windows.bat" download>Installer · Windows</a><button class="btn btn-ghost" id="ccSettings">Card reader settings</button></div></div>
     <div class="ckdlg-actions"><button class="btn btn-ghost" id="ccCancel">Close</button></div>`;
   $("#ccRound")?.addEventListener("change", e => { CC.round = +e.target.value; });
   $("#ccCancel").onclick = () => $("#ccDialog").close();
