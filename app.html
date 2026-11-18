@@ -278,6 +278,89 @@ table.card9 .tot small{display:block;font-weight:500;font-size:10.5px;color:var(
 .qsteps{text-align:left;max-width:460px;margin:10px auto;font-size:13.5px;line-height:1.55;color:var(--ink)}
 .qwarn{background:#fbf3e3;color:#7a5f10;border-radius:10px;padding:10px 12px;font-size:12.5px;text-align:left;max-width:520px;margin:10px auto}
 @media print{body *{visibility:hidden}#cardModal,#cardModal *{visibility:visible}#cardModal{position:absolute;inset:0;background:#fff}.cm-panel{box-shadow:none}.cm-close,#qrPrint,.qwarn{display:none!important}}
+/* ---------- operations checklist ---------- */
+.ck-top{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-bottom:16px;align-items:start}
+.ckpanel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.ckpanel h3{font-size:18px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.ed{width:100%;border-collapse:collapse;font-size:13px}
+.ed td{border-bottom:1px solid var(--line);padding:4px 6px;vertical-align:middle}
+.ed td.l{width:30%}
+.ed input,.ed select{font:inherit;width:100%;border:1px solid transparent;border-radius:6px;padding:7px 8px;background:transparent;color:var(--ink)}
+.ed input:hover,.ed select:hover{border-color:var(--line)}
+.ed input:focus,.ed select:focus{outline:none;border-color:var(--olive);background:#fff}
+.ed td.l input{font-weight:600;color:var(--forest)}
+.ed select{width:118px}
+.st-pill{font-weight:600}
+.st-Done{color:#2f7d46}.st-Decided{color:var(--teal)}.st-Pending,.st-In{color:#a8781a}.st-Blocked{color:#a23b2b}
+.ed .del,.ckrow .del{border:0;background:none;color:#9aa49a;font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px}
+.ed .del:hover,.ckrow .del:hover{background:#fbeaea;color:#9b2c2c}
+.ed .del.armed,.ckrow .del.armed{background:#fbeaea;color:#9b2c2c;font-size:11px;font-weight:700}
+.addrow{margin-top:8px;font:inherit;font-size:12.5px;font-weight:600;border:1px dashed var(--line);background:#fff;color:var(--olive);border-radius:8px;padding:8px 12px;cursor:pointer;width:100%}
+.addrow:hover{border-color:var(--olive);background:var(--sage-2)}
+.ckstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.ckstats div{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.ckstats b{display:block;font-size:24px;font-weight:700;color:var(--forest);letter-spacing:-.02em}
+.ckstats span{font-size:11.5px;color:var(--muted)}
+.ckstats .bl b{color:#a23b2b}.ckstats .dn b{color:#2f7d46}
+.ckbar{height:8px;background:var(--sage-2);border-radius:999px;overflow:hidden}.ckbar i{display:block;height:100%;background:#2f7d46;border-radius:999px;transition:width .3s}
+.ckbar-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px}
+.cktools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 14px}
+.cktools input,.cktools select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:#fff;color:var(--ink)}
+.cktools input{min-width:220px;flex:1}
+.ckhead{background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.ckhead>.hh{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--forest);color:#fff}
+.ckhead>.hh .n{font-family:var(--serif);font-size:20px;color:var(--gold);min-width:28px}
+.ckhead>.hh .t{font-family:var(--serif);font-size:18px;flex:1;cursor:text}
+.ckhead>.hh .c{font-size:12px;opacity:.85;white-space:nowrap}
+.ckhead>.hh button{font:inherit;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;border-radius:7px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.ckhead>.hh button:hover{background:rgba(255,255,255,.12)}
+.ckhead>.hh .del{border:0;color:#cfe0c8}
+.cksub{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--sage-2);border-top:1px solid var(--line)}
+.cksub .t{font-weight:700;color:var(--forest);flex:1;font-size:13.5px;cursor:text}
+.cksub .c{font-size:11.5px;color:var(--muted)}
+.cksub button{font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;color:var(--olive);border-radius:7px;padding:5px 9px;cursor:pointer}
+.ckrow{display:grid;grid-template-columns:34px 30px minmax(0,1fr) 170px 120px 30px;gap:8px;align-items:center;padding:8px 14px;border-top:1px solid var(--line);font-size:13.5px}
+.ckrow .num{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.ckrow .box{width:22px;height:22px;border:2px solid #b8c2b3;border-radius:6px;background:#fff;cursor:pointer;display:grid;place-items:center;padding:0}
+.ckrow .box.on{background:#2f7d46;border-color:#2f7d46;color:#fff}
+.ckrow .tx{min-width:0}
+.ckrow .tx .t{cursor:text;word-break:break-word}
+.ckrow .tx .m{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+.ckrow select{font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:7px;padding:6px 8px;background:#fff;color:var(--ink);width:100%}
+.ckrow.done .t{color:#6f7c6b;text-decoration:line-through;text-decoration-color:#9fb39a}
+.ckrow.blocked{background:#fdf5f3}
+.ckrow.cancelled .t{text-decoration:line-through;color:#9aa49a}
+.ckrow.cancelled{background:#fafaf8}
+.ckrow .sel-done{color:#2f7d46;font-weight:600}.ckrow .sel-blocked{color:#a23b2b;font-weight:600}
+.ckempty{padding:14px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+.inl{font:inherit;width:100%;border:1px solid var(--olive);border-radius:6px;padding:4px 7px;color:var(--ink);background:#fff}
+.ckhead>.hh .inl{color:var(--ink);font-family:var(--serif);font-size:16px}
+dialog.ckdlg{border:0;border-radius:14px;padding:0;width:min(520px,94vw);box-shadow:0 30px 80px rgba(0,0,0,.25)}
+dialog.ckdlg::backdrop{background:rgba(26,40,29,.45)}
+.ckdlg form{padding:20px 22px}
+.ckdlg-title{font-family:var(--serif);font-size:22px;color:var(--forest)}
+.ckdlg-intro{font-size:13px;color:var(--muted);margin:4px 0 14px}
+.ckdlg-fields{display:grid;gap:12px}
+.ckdlg-fields label{font-size:12px;font-weight:600;color:var(--muted);display:grid;gap:5px}
+.ckdlg-fields input,.ckdlg-fields select,.ckdlg-fields textarea{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:10px 11px;color:var(--ink);background:#fff}
+.ckdlg-fields input:focus,.ckdlg-fields select:focus,.ckdlg-fields textarea:focus{outline:none;border-color:var(--olive);box-shadow:0 0 0 3px rgba(90,112,76,.15)}
+.ckdlg-actions{display:flex;gap:8px;margin-top:16px}
+.teamlist{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.teamlist div{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--line);font-size:13px}
+.teamlist div:last-child{border-bottom:0}.teamlist b{flex:1}.teamlist span{color:var(--muted);font-size:12px}
+@media (max-width:900px){
+  .ck-top{grid-template-columns:1fr}.ckstats{grid-template-columns:repeat(4,1fr)}.ckstats b{font-size:20px}
+  .ed tbody,.ed tr{display:block}.ed tr{display:grid;grid-template-columns:1fr 118px 30px;gap:2px 6px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .ed td{border:0;padding:0;width:auto!important}.ed td.l{grid-column:1 / 4}.ed td.l input{padding:4px 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .ckrow{grid-template-columns:24px minmax(0,1fr) 28px;grid-template-areas:"box tx del" ". as as" ". ss ss";gap:6px 8px;padding:10px 12px}
+  .ckrow .num{display:none}.ckrow .box{grid-area:box}.ckrow .tx{grid-area:tx}.ckrow .del{grid-area:del}
+  .ckrow .as{grid-area:as}.ckrow .ss{grid-area:ss}
+  .ckrow{grid-template-areas:"box tx del" ". as ss"}
+  .ckrow{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr) 28px;grid-template-areas:"box tx tx del" ". as ss ss"}
+  .ckhead>.hh{flex-wrap:wrap;gap:8px 10px}.ckhead>.hh .t{flex:1 1 60%}.ckhead>.hh .c{order:3}
+  .cktools input{min-width:0;flex:1 1 100%}.cktools select{flex:1}.cktools .btn{flex:1 1 40%}
+}
+@media (max-width:760px){nav.tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch}nav.tabs::-webkit-scrollbar{display:none}nav.tabs a{white-space:nowrap;flex:none}}
 .phases{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .phases button{font:inherit;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;color:var(--ink)}
 .phases button b{display:block;font-family:var(--serif);font-weight:500;font-size:15px;color:var(--forest)}
@@ -349,6 +432,7 @@ nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{b
       <a href="#participants" data-v="participants">Participants</a>
       <a href="#scores" data-v="scores">Scores</a>
       <a href="#setup" data-v="setup">Event setup</a>
+      <a href="#checklist" data-v="checklist">Checklist</a>
     </nav>
     <div class="who"><span class="pill done">Live</span><span class="em" id="whoEmail"></span><button class="btn btn-ghost" id="signOut" style="padding:6px 12px;font-size:12px">Sign out</button></div>
   </div></header>
@@ -358,9 +442,12 @@ nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{b
     <section class="view hidden" id="v-participants"></section>
     <section class="view hidden" id="v-scores"></section>
     <section class="view hidden" id="v-setup"></section>
+    <section class="view hidden" id="v-checklist"></section>
   </main>
 </div>
 
+<dialog id="ckDialog" class="ckdlg"><form id="ckForm" method="dialog"><div class="ckdlg-title" id="ckDlgTitle">Add a checklist point</div><p class="ckdlg-intro" id="ckDlgIntro"></p><div class="ckdlg-fields" id="ckDlgFields"></div>
+  <div class="ckdlg-actions"><button class="btn btn-primary" type="submit" id="ckDlgOk">Add</button><button class="btn btn-ghost" type="button" id="ckDlgCancel">Cancel</button></div></form></dialog>
 <div id="cardModal" class="cm hidden" role="dialog" aria-modal="true" aria-label="Scorecard">
   <div class="cm-panel"><button class="cm-close" aria-label="Close">×</button><div class="cm-body"></div></div>
 </div>
@@ -1033,8 +1120,257 @@ async function showQR(){
   $("#qrPrint").addEventListener("click", () => window.print());
 }
 
+/* ---------- operations checklist (admin) ---------- */
+const CK = { city: null, items: [], team: [], details: [], q: "", st: "all", who: "all", loaded: null, editing: false };
+const DETAIL_STATUS = ["", "Done", "Decided", "In progress", "Pending", "Blocked"];
+async function ckLoad(cid){
+  const [it, tm, dt] = await Promise.all([
+    supabaseClient.from("checklist_items").select("*").eq("city_id", cid).order("sort_order").order("id"),
+    supabaseClient.from("team_members").select("*").eq("active", true).order("name"),
+    supabaseClient.from("event_details").select("*").eq("city_id", cid).order("sort_order").order("id")]);
+  const e = it.error || tm.error || dt.error; if(e) throw e;
+  CK.items = it.data; CK.team = tm.data; CK.details = dt.data; CK.loaded = cid;
+}
+const ckName = id => (CK.team.find(t => t.id === id) || {}).name || "";
+const meName = () => { const t = CK.team.find(x => (x.email||"").toLowerCase() === (S.email||"").toLowerCase()); return t ? t.name : (S.email || "admin"); };
+const kids = (pid, kind) => CK.items.filter(i => i.parent_id === pid && (!kind || i.kind === kind)).sort((a,b) => a.sort_order - b.sort_order || a.id - b.id);
+const pointsUnder = id => { const out = []; kids(id).forEach(k => { if(k.kind === "point") out.push(k); else out.push(...pointsUnder(k.id)); }); return out; };
+const nextOrder = () => (CK.items.reduce((m,i) => Math.max(m, i.sort_order), 0) + 1);
+const fmtTime = t => { if(!t) return ""; const d = new Date(t); return `${d.getDate()} ${MON[d.getMonth()]} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
+const fmtDetail = d => d.label.toLowerCase() === "budget" && /^\d+$/.test(d.value||"") ? "₹ " + Number(d.value).toLocaleString("en-IN") : d.value;
+
+async function renderChecklist(){
+  const L = legs(), v = $("#v-checklist");
+  if(CK.city == null){ CK.city = (L.find(c => c.scoring_open) || L.find(c => c.status !== "completed") || L[0]).id; }
+  if(CK.loaded !== CK.city){
+    v.innerHTML = `<div class="loading">Loading checklist…</div>`;
+    try{ await ckLoad(CK.city); }catch(e){ v.innerHTML = `<div class="empty"><h3>Couldn't load the checklist</h3><p>${esc(e.message)}</p></div>`; return; }
+  }
+  const c = cityById(CK.city);
+  const pts = CK.items.filter(i => i.kind === "point"), live = pts.filter(p => p.status !== "cancelled");
+  const nDone = live.filter(p => p.status === "done").length, nBl = live.filter(p => p.status === "blocked").length;
+  const pct = live.length ? Math.round(nDone / live.length * 100) : 0;
+  const heads = kids(null, "heading");
+  v.innerHTML = `
+    <div class="h-row"><h2>Operations checklist</h2><span class="sub">Tournament-day points for the ISL team. Everyone signed in as admin sees the same list.</span></div><div class="hr"></div>
+    <div class="toolbar"><div class="chips" id="ckChips">${L.map(x => `<button class="chip ${x.id===c.id?"on":""}" data-c="${x.id}">${esc(x.name)}</button>`).join("")}</div></div>
+    <div class="ck-top">
+      <div class="ckpanel"><h3>Event details · IGC ${esc(c.name)}</h3>
+        <table class="ed"><tbody id="edBody">${CK.details.map(d => `<tr data-id="${d.id}">
+          <td class="l"><input data-f="label" value="${esc(d.label)}" aria-label="Detail name"></td>
+          <td><input data-f="value" value="${esc(d.value||"")}" placeholder="—" aria-label="${esc(d.label)} value" title="${esc(fmtDetail(d)||"")}"></td>
+          <td style="width:122px"><select data-f="status" class="st-pill st-${esc((d.status||"").split(" ")[0])}" aria-label="${esc(d.label)} status">${DETAIL_STATUS.map(x => `<option value="${x}" ${(d.status||"")===x?"selected":""}>${x||"—"}</option>`).join("")}</select></td>
+          <td style="width:34px"><button type="button" class="del" aria-label="Remove ${esc(d.label)}">×</button></td></tr>`).join("")}</tbody></table>
+        <button type="button" class="addrow" id="edAdd">+ Add detail</button>
+      </div>
+      <div class="ckpanel"><h3>Progress</h3>
+        <div class="ckstats"><div><b>${live.length}</b><span>Points</span></div><div class="dn"><b>${nDone}</b><span>Done</span></div><div><b>${live.length-nDone-nBl}</b><span>Open</span></div><div class="bl"><b>${nBl}</b><span>Blocked</span></div></div>
+        <div class="ckbar"><i style="width:${pct}%"></i></div><div class="ckbar-l"><span>${pct}% complete</span><span>${pts.length-live.length} cancelled</span></div>
+      </div>
+    </div>
+    <div class="cktools">
+      <input type="search" id="ckQ" placeholder="Search points" value="${esc(CK.q)}">
+      <select id="ckSt" aria-label="Filter by status"><option value="all">All statuses</option><option value="open">Open</option><option value="done">Done</option><option value="blocked">Blocked</option><option value="cancelled">Cancelled</option></select>
+      <select id="ckWho" aria-label="Filter by person"><option value="all">Everyone</option><option value="none">Unassigned</option>${CK.team.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select>
+      <button class="btn btn-primary" id="ckAddPoint">+ Add point</button>
+      <button class="btn btn-ghost" id="ckAddHead">+ Heading</button>
+      <button class="btn btn-ghost" id="ckTeam">Team (${CK.team.length})</button>
+      <button class="btn btn-ghost" id="ckCsv">Export CSV</button>
+    </div>
+    <div id="ckTree">${heads.length ? "" : `<div class="empty"><h3>No checklist yet for ${esc(c.name)}</h3><p>Start with a heading (e.g. <i>Course &amp; Venue</i>), add subheadings (e.g. <i>Tee-off setup</i>) and then the points to check on the day.</p><p><button class="btn btn-primary" id="ckFirst">+ Add first heading</button></p></div>`}</div>`;
+  $("#ckSt").value = CK.st; $("#ckWho").value = CK.who;
+  drawTree();
+
+  // ---- wiring
+  v.querySelectorAll("#ckChips .chip").forEach(b => b.addEventListener("click", () => { CK.city = +b.dataset.c; renderChecklist(); }));
+  $("#ckQ").addEventListener("input", e => { CK.q = e.target.value; drawTree(); });
+  $("#ckSt").addEventListener("change", e => { CK.st = e.target.value; drawTree(); });
+  $("#ckWho").addEventListener("change", e => { CK.who = e.target.value; drawTree(); });
+  $("#ckAddPoint").addEventListener("click", () => ckDialog("point"));
+  $("#ckAddHead").addEventListener("click", () => ckDialog("heading"));
+  if($("#ckFirst")) $("#ckFirst").addEventListener("click", () => ckDialog("heading"));
+  $("#ckTeam").addEventListener("click", () => ckDialog("team"));
+  $("#ckCsv").addEventListener("click", ckCsv);
+  // event details: save on change
+  v.querySelectorAll("#edBody tr").forEach(tr => {
+    const id = +tr.dataset.id;
+    tr.querySelectorAll("input,select").forEach(el => el.addEventListener("change", async () => {
+      const patch = { [el.dataset.f]: el.value || null, updated_at: new Date().toISOString(), updated_by: meName() };
+      if(el.dataset.f === "label" && !el.value.trim()) return;
+      const { error } = await supabaseClient.from("event_details").update(patch).eq("id", id);
+      if(error) return toast(error.message);
+      Object.assign(CK.details.find(d => d.id === id), patch);
+      if(el.tagName === "SELECT") el.className = `st-pill st-${(el.value||"").split(" ")[0]}`;
+      toast("Saved");
+    }));
+    const del = tr.querySelector(".del");
+    del.addEventListener("click", async () => {
+      if(!del.classList.contains("armed")){ del.classList.add("armed"); del.textContent = "Remove?"; setTimeout(() => { del.classList.remove("armed"); del.textContent = "×"; }, 2500); return; }
+      const { error } = await supabaseClient.from("event_details").delete().eq("id", id);
+      if(error) return toast(error.message);
+      CK.details = CK.details.filter(d => d.id !== id); renderChecklist();
+    });
+  });
+  $("#edAdd").addEventListener("click", async () => {
+    const { data, error } = await supabaseClient.from("event_details").insert({ city_id: c.id, label: "New detail", sort_order: CK.details.reduce((m,d) => Math.max(m, d.sort_order), 0) + 1, updated_by: meName() }).select().single();
+    if(error) return toast(error.message);
+    CK.details.push(data); renderChecklist();
+    setTimeout(() => { const inp = $(`#edBody tr[data-id="${data.id}"] input`); if(inp){ inp.focus(); inp.select(); } }, 30);
+  });
+}
+
+function drawTree(){
+  const box = $("#ckTree"); if(!box || !CK.items.some(i => i.kind === "heading")) return;
+  const q = CK.q.trim().toLowerCase();
+  const match = p => (CK.st === "all" || p.status === CK.st) && (CK.who === "all" || (CK.who === "none" ? !p.assignee_id : p.assignee_id === +CK.who)) && (!q || p.title.toLowerCase().includes(q) || ckName(p.assignee_id).toLowerCase().includes(q));
+  const filtering = q || CK.st !== "all" || CK.who !== "all";
+  let n = 0;
+  const row = p => { n++; const who = p.assignee_id;
+    return `<div class="ckrow ${p.status}" data-id="${p.id}">
+      <span class="num">${n}</span>
+      <button type="button" class="box ${p.status==="done"?"on":""}" aria-label="Mark ${p.status==="done"?"not done":"done"}" ${p.status==="cancelled"?"disabled":""}>${p.status==="done"?"✓":""}</button>
+      <div class="tx"><span class="t" title="Click to edit">${esc(p.title)}</span>${p.status==="done"&&p.done_by?`<span class="m">Done by ${esc(p.done_by)} · ${fmtTime(p.done_at)}</span>`:p.status==="cancelled"?`<span class="m">Cancelled${p.done_by?` by ${esc(p.done_by)}`:""}${p.cancel_reason?` · ${esc(p.cancel_reason)}`:""}</span>`:p.status==="blocked"&&p.note?`<span class="m">Blocked: ${esc(p.note)}</span>`:""}</div>
+      <select class="as" aria-label="Assign to">${["<option value=''>Assign to…</option>", ...CK.team.map(t => `<option value="${t.id}" ${t.id===who?"selected":""}>${esc(t.name)}</option>`)].join("")}${who && !CK.team.some(t => t.id===who) ? `<option value="${who}" selected>(inactive)</option>` : ""}</select>
+      <select class="ss sel-${p.status}" aria-label="Status">${[["open","Open"],["done","Done"],["blocked","Blocked"],["cancelled","Cancelled"]].map(([k,l]) => `<option value="${k}" ${p.status===k?"selected":""}>${l}</option>`).join("")}</select>
+      <button type="button" class="del" aria-label="Delete point">×</button></div>`; };
+  let hi = 0;
+  box.innerHTML = kids(null, "heading").map(h => {
+    hi++;
+    const direct = kids(h.id, "point").filter(match), subs = kids(h.id, "subheading");
+    const all = pointsUnder(h.id).filter(p => p.status !== "cancelled"), done = all.filter(p => p.status === "done").length;
+    const subHtml = subs.map(sh => { const sp = kids(sh.id, "point").filter(match); const sall = kids(sh.id, "point").filter(p => p.status !== "cancelled");
+      if(filtering && !sp.length) return "";
+      return `<div class="cksub" data-id="${sh.id}"><span class="t" title="Click to rename">${esc(sh.title)}</span><span class="c">${sall.filter(p=>p.status==="done").length}/${sall.length}</span><button type="button" data-add="${sh.id}">+ Point</button><button type="button" class="del" aria-label="Delete subheading">×</button></div>${sp.map(row).join("") || (filtering ? "" : `<div class="ckempty">No points yet. Use + Point.</div>`)}`; }).join("");
+    if(filtering && !direct.length && !subHtml) return "";
+    return `<div class="ckhead" data-id="${h.id}"><div class="hh"><span class="n">${String(hi).padStart(2,"0")}</span><span class="t" title="Click to rename">${esc(h.title)}</span><span class="c">${done}/${all.length} done</span>
+      <button type="button" data-addsub="${h.id}">+ Subheading</button><button type="button" data-add="${h.id}">+ Point</button><button type="button" class="del" aria-label="Delete heading">×</button></div>
+      ${direct.map(row).join("")}${subHtml}${!filtering && !direct.length && !subs.length ? `<div class="ckempty">Empty heading. Add a subheading or a point.</div>` : ""}</div>`;
+  }).join("") || `<div class="empty"><p>No points match these filters.</p></div>`;
+
+  // wiring
+  box.querySelectorAll("[data-add]").forEach(b => b.addEventListener("click", () => ckDialog("point", +b.dataset.add)));
+  box.querySelectorAll("[data-addsub]").forEach(b => b.addEventListener("click", () => ckDialog("subheading", +b.dataset.addsub)));
+  box.querySelectorAll(".ckhead>.hh .t, .cksub .t, .ckrow .tx .t").forEach(t => t.addEventListener("click", () => inlineEdit(t)));
+  box.querySelectorAll(".del").forEach(b => b.addEventListener("click", async () => {
+    const el = b.closest("[data-id]"), id = +el.dataset.id, it = CK.items.find(i => i.id === id);
+    if(!b.classList.contains("armed")){ b.classList.add("armed"); b.textContent = it.kind === "point" ? "Delete?" : `Delete ${it.kind} & ${pointsUnder(id).length} pts?`; setTimeout(() => { if(b.isConnected){ b.classList.remove("armed"); b.textContent = "×"; } }, 3000); return; }
+    const { error } = await supabaseClient.from("checklist_items").delete().eq("id", id);
+    if(error) return toast(error.message);
+    const gone = new Set([id, ...CK.items.filter(i => i.parent_id === id).map(i => i.id)]);
+    CK.items.forEach(i => { if(gone.has(i.parent_id)) gone.add(i.id); });
+    CK.items = CK.items.filter(i => !gone.has(i.id)); renderChecklist();
+  }));
+  box.querySelectorAll(".ckrow").forEach(r => {
+    const id = +r.dataset.id;
+    r.querySelector(".box").addEventListener("click", () => setStatus(id, CK.items.find(i => i.id === id).status === "done" ? "open" : "done"));
+    r.querySelector(".ss").addEventListener("change", e => setStatus(id, e.target.value));
+    r.querySelector(".as").addEventListener("change", async e => { await ckUpdate(id, { assignee_id: e.target.value ? +e.target.value : null }); toast(e.target.value ? `Assigned to ${ckName(+e.target.value)}` : "Unassigned"); });
+  });
+}
+async function ckUpdate(id, patch){
+  patch.updated_at = new Date().toISOString();
+  const { error } = await supabaseClient.from("checklist_items").update(patch).eq("id", id);
+  if(error){ toast(error.message); return false; }
+  Object.assign(CK.items.find(i => i.id === id), patch); return true;
+}
+async function setStatus(id, st){
+  if(st === "cancelled") return ckDialog("cancel", id);
+  if(st === "blocked") return ckDialog("block", id);
+  const patch = { status: st, cancel_reason: null };
+  if(st === "done"){ patch.done_by = meName(); patch.done_at = new Date().toISOString(); } else { patch.done_by = null; patch.done_at = null; }
+  if(await ckUpdate(id, patch)) renderChecklist();
+}
+function inlineEdit(span){
+  const el = span.closest("[data-id]"), id = +el.dataset.id, it = CK.items.find(i => i.id === id);
+  const inp = document.createElement("input"); inp.className = "inl"; inp.value = it.title; span.replaceWith(inp); inp.focus(); inp.select();
+  let done = false;
+  const finish = async save => { if(done) return; done = true; const t = inp.value.trim(); if(save && t && t !== it.title) await ckUpdate(id, { title: t }); drawTree(); };
+  inp.addEventListener("keydown", e => { if(e.key === "Enter") finish(true); if(e.key === "Escape") finish(false); });
+  inp.addEventListener("blur", () => finish(true));
+}
+
+/* add heading / subheading / point, cancel, block, team — one dialog */
+function ckDialog(mode, ref){
+  const dlg = $("#ckDialog"), F = $("#ckDlgFields"), heads = kids(null, "heading");
+  const headOpts = sel => heads.map(h => `<option value="${h.id}" ${h.id===sel?"selected":""}>${esc(h.title)}</option>`).join("");
+  const teamOpts = `<option value="">Unassigned</option>` + CK.team.map(t => `<option value="${t.id}">${esc(t.name)}${t.role?` · ${esc(t.role)}`:""}</option>`).join("");
+  let title, intro, ok = "Add", submit;
+  if(mode === "heading"){
+    title = "Add a heading"; intro = "A main section of the day, e.g. Course & Venue, Registration Desk, Prize Distribution.";
+    F.innerHTML = `<label>Heading<input id="dH" required maxlength="80" placeholder="e.g. Course & Venue"></label>`;
+    submit = async () => { const t = $("#dH").value.trim(); if(!t) return false; return ckInsert({ kind: "heading", parent_id: null, title: t }); };
+  } else if(mode === "subheading"){
+    title = "Add a subheading"; intro = "A group of related points under a heading, e.g. Tee-off setup.";
+    F.innerHTML = `<label>Under heading<select id="dP">${headOpts(ref)}</select></label><label>Subheading<input id="dH" required maxlength="80" placeholder="e.g. Tee-off setup"></label>`;
+    submit = async () => { const t = $("#dH").value.trim(); if(!t) return false; return ckInsert({ kind: "subheading", parent_id: +$("#dP").value, title: t }); };
+  } else if(mode === "point"){
+    if(!heads.length){ toast("Add a heading first"); return ckDialog("heading"); }
+    const refIt = CK.items.find(i => i.id === ref);
+    const headSel = refIt ? (refIt.kind === "heading" ? refIt.id : refIt.parent_id) : heads[0].id, subSel = refIt && refIt.kind === "subheading" ? refIt.id : "";
+    title = "Add a checklist point"; intro = "Pick where it belongs, describe the check, and assign it to someone.";
+    F.innerHTML = `<label>Heading<select id="dP">${headOpts(headSel)}</select></label>
+      <label>Subheading (optional)<select id="dS"></select></label>
+      <label>Checklist point<textarea id="dT" rows="2" required maxlength="300" placeholder="e.g. Flags and tee markers placed on all 18 holes"></textarea></label>
+      <label>Assign to<select id="dA">${teamOpts}</select></label>`;
+    const fillSubs = () => { const hs = kids(+$("#dP").value, "subheading"); $("#dS").innerHTML = `<option value="">— Directly under heading —</option>` + hs.map(s => `<option value="${s.id}" ${s.id===subSel?"selected":""}>${esc(s.title)}</option>`).join(""); };
+    fillSubs(); $("#dP").addEventListener("change", fillSubs);
+    submit = async () => { const t = $("#dT").value.trim(); if(!t) return false;
+      return ckInsert({ kind: "point", parent_id: +($("#dS").value || $("#dP").value), title: t, assignee_id: $("#dA").value ? +$("#dA").value : null }, true); };
+  } else if(mode === "cancel" || mode === "block"){
+    const it = CK.items.find(i => i.id === ref);
+    title = mode === "cancel" ? "Cancel this checklist point?" : "Mark as blocked";
+    intro = mode === "cancel" ? "The point stays in the list, struck through, and shows who cancelled it. You can restore it later." : "Say what's blocking it so the team can help.";
+    ok = mode === "cancel" ? "Cancel point" : "Mark blocked";
+    F.innerHTML = `<div class="ckempty" style="border:1px solid var(--line);border-radius:8px"><b>${esc(it.title)}</b></div><label>${mode==="cancel"?"Reason (optional)":"What's blocking it?"}<input id="dR" maxlength="160" placeholder="${mode==="cancel"?"e.g. Not required this year":"e.g. Waiting for vendor confirmation"}"></label>`;
+    submit = async () => { const r = $("#dR").value.trim() || null;
+      const patch = mode === "cancel" ? { status: "cancelled", cancel_reason: r, done_by: meName(), done_at: new Date().toISOString() } : { status: "blocked", note: r, done_by: null, done_at: null };
+      return ckUpdate(ref, patch); };
+  } else if(mode === "team"){
+    title = "Event team"; intro = "People who appear in the Assign to list. Admins with a login are listed automatically.";
+    ok = "Add person";
+    F.innerHTML = `<div class="teamlist">${CK.team.map(t => `<div><b>${esc(t.name)}</b><span>${esc(t.role||"")}</span><button type="button" class="del" data-rm="${t.id}" aria-label="Remove ${esc(t.name)}">×</button></div>`).join("")}</div>
+      <label>Name<input id="dN" maxlength="60" placeholder="e.g. Rahul"></label><label>Role (optional)<input id="dRo" maxlength="60" placeholder="e.g. Registration desk"></label>`;
+    F.querySelectorAll("[data-rm]").forEach(b => b.addEventListener("click", async () => {
+      const { error } = await supabaseClient.from("team_members").update({ active: false }).eq("id", +b.dataset.rm);
+      if(error) return toast(error.message);
+      CK.team = CK.team.filter(t => t.id !== +b.dataset.rm); b.parentElement.remove();
+    }));
+    submit = async () => { const nm = $("#dN").value.trim(); if(!nm) return false;
+      const { data, error } = await supabaseClient.from("team_members").insert({ name: nm, role: $("#dRo").value.trim() || null }).select().single();
+      if(error){ toast(error.message); return false; } CK.team.push(data); CK.team.sort((a,b) => a.name.localeCompare(b.name)); toast(`${nm} added`); return true; };
+  }
+  $("#ckDlgTitle").textContent = title; $("#ckDlgIntro").textContent = intro; $("#ckDlgOk").textContent = ok;
+  $("#ckForm").onsubmit = async e => { e.preventDefault(); const b = $("#ckDlgOk"); b.disabled = true; const r = await submit(); b.disabled = false; if(r !== false){ dlg.close(); renderChecklist(); } };
+  $("#ckDlgCancel").onclick = () => dlg.close();
+  dlg.showModal(); const first = F.querySelector("input:not([type=hidden]),textarea"); if(first && mode !== "team") first.focus(); else if(mode === "team") $("#dN").focus();
+}
+async function ckInsert(row, keepOpen){
+  row.city_id = CK.city; row.sort_order = nextOrder(); row.created_by = meName();
+  const { data, error } = await supabaseClient.from("checklist_items").insert(row).select().single();
+  if(error){ toast(error.message); return false; }
+  CK.items.push(data); toast(`${row.kind === "point" ? "Point" : row.kind[0].toUpperCase() + row.kind.slice(1)} added`); return true;
+}
+function ckCsv(){
+  const c = cityById(CK.city), q = v => { const t = String(v ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; };
+  const lines = [["Event detail","Value","Status"].join(","), ...CK.details.map(d => [d.label, d.value, d.status].map(q).join(",")), "",
+    ["#","Heading","Subheading","Checklist point","Assigned to","Status","Done / cancelled by","When","Note / reason"].join(",")];
+  let n = 0;
+  kids(null, "heading").forEach(h => {
+    const emit = (p, sub) => lines.push([++n, h.title, sub || "", p.title, ckName(p.assignee_id), p.status, p.done_by || "", p.done_at ? new Date(p.done_at).toLocaleString("en-IN") : "", p.cancel_reason || p.note || ""].map(q).join(","));
+    kids(h.id, "point").forEach(p => emit(p)); kids(h.id, "subheading").forEach(sh => kids(sh.id, "point").forEach(p => emit(p, sh.title)));
+  });
+  const blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `IGC-${c.name}-checklist.csv`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+// keep the list in sync for everyone (every 20 s while the tab is open and nobody is typing)
+setInterval(async () => {
+  if(!S.ready || location.hash.slice(1) !== "checklist" || document.visibilityState !== "visible" || $("#ckDialog").open) return;
+  if(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+  try{ await ckLoad(CK.city); renderChecklist(); }catch(e){}
+}, 20000);
+
 /* ---------- routing + shell ---------- */
-const VIEWS = ["dashboard","participants","scores","setup"];
+const VIEWS = ["dashboard","participants","scores","setup","checklist"];
 document.addEventListener("click", e => {
   const row = e.target.closest("[data-pid]");
   if(row && !e.target.closest("a")){ e.stopPropagation(); openCard(+row.dataset.pid); }
@@ -1045,7 +1381,7 @@ function route(){
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "dashboard";
   VIEWS.forEach(x => $("#v-"+x).classList.toggle("hidden", x!==v));
   document.querySelectorAll("nav.tabs a").forEach(a => a.classList.toggle("on", a.dataset.v===v));
-  ({dashboard:renderDashboard, participants:renderParticipants, scores:renderScores, setup:renderSetup})[v]();
+  ({dashboard:renderDashboard, participants:renderParticipants, scores:renderScores, setup:renderSetup, checklist:renderChecklist})[v]();
   window.scrollTo(0,0);
 }
 window.addEventListener("hashchange", route);

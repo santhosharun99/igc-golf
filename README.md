@@ -53,6 +53,13 @@ Set per event in **Event setup → Competition format**:
 - **Needs HTTPS to install on phones.** Localhost works only on your own computer. To use it with players, host the folder (Netlify drop, Vercel or GitHub Pages; all give HTTPS) and print the QR from the hosted site.
 - After changing files, bump `VERSION` in `sw.js` so installed apps pick up the update.
 
+## Operations checklist (admin → Checklist)
+- Per event, in the same format as the ARHM checklist: **Heading → Subheading → Checklist points**, numbered.
+- Each point has **Assign to** (a dropdown of the event team), a status (**Open / Done / Blocked / Cancelled**), and "Done by … · time". A blocked point records what is blocking it; a cancelled point stays in the list struck through, with the reason.
+- Also on the page: **Event details** at the top (label, value and status such as Done or Decided; editable, add or remove rows), a progress summary, search, filters by status and person, **Team** management (who appears in Assign to), and **CSV export**.
+- Click any heading, subheading or point to rename it. Changes sync for every admin (refreshes every 20 s).
+- Tables: `checklist_items`, `event_details`, `team_members` (admins only; players can't see them).
+
 ## 3. Updating data
 Use **Table Editor** in Supabase:
 - **Opening a city:** set its `registration_status` to `open`, then add players to `participants` with that `city_id`. Set it to `closed` when entries close.
