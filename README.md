@@ -70,7 +70,7 @@ Set per event in **Event setup → Competition format**:
 ## Registration import (Participants → Import registrations)
 - For Google Form responses: Responses → View in Sheets → File → Download → CSV or Excel, then drop the file into the dialog (or paste the rows).
 - Reads the IGC form questions automatically (Timestamp, Full Name, Email, Phone number, Handicap, T-Shirt Size, Participation Category, the payment confirmation, accommodation, airport transfers). Renamed or reordered questions still map, and any mapping can be changed in the preview.
-- Cleans the data: names in proper case, emails lowercased and checked, phones in +91 format, handicaps like "about 24" → 24 ("NA" / "beginner" are flagged so an admin sets them), sizes normalised (2XL → XXL), yes/no answers read.
+- Cleans the data: names in proper case, emails lowercased and checked, phones in +91 format, handicaps like "about 24" → 24; handicap is optional — blank, "NA" or "beginner" is stored empty and shown as N/A, and can be typed in later on the Scores page handicap list (or left empty for Super 36 events), sizes normalised (2XL → XXL), yes/no answers read.
 - The same person submitting twice is merged, keeping the latest answers. People already in the event are matched by email or phone and updated, not duplicated, so re-importing a newer export adds only the new registrations.
 - Participants table and CSV now include Category, T-shirt, Payment, Accommodation and Transfer.
 - Logic in `regimport.js` (tested with a Google-Forms-style file using the Ahmedabad form's questions).

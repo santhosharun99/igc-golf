@@ -107,7 +107,6 @@ export function analyseRegs(text, existing = [], mappingOverride) {
     if (p.email === null) p.problems.push("email looks wrong");
     if (p.mobile === null) p.problems.push("phone looks wrong");
     if (!p.email && !p.mobile) p.problems.push("no email or phone");
-    if (p.handicap_raw && p.handicap_index == null) p.problems.push(`handicap "${p.handicap_raw}": set it in Event setup`);
     if (!p.full_name && !p.email && !p.mobile) return;           // blank row
     // the same person submitting twice: keep the latest submission
     const key = p.email || p.mobile || p.full_name.toLowerCase();
