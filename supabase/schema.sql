@@ -97,3 +97,14 @@ create table if not exists public.sponsors (
 );
 alter table public.sponsors enable row level security;
 create policy "staff manage sponsors" on public.sponsors for all to authenticated using ((select public.is_staff())) with check ((select public.is_staff()));
+
+-- Procurement per event (city)
+create table if not exists public.procurement (
+  id bigint generated always as identity primary key,
+  city_id bigint not null references public.cities(id) on delete cascade,
+  item text not null, qty_ordered numeric(12,2), qty_received numeric(12,2),
+  checked boolean not null default false, amount_paid numeric(14,2),
+  sort_order int not null default 0, updated_by text, updated_at timestamptz not null default now()
+);
+alter table public.procurement enable row level security;
+create policy "staff manage procurement" on public.procurement for all to authenticated using ((select public.is_staff())) with check ((select public.is_staff()));

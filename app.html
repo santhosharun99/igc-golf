@@ -444,7 +444,9 @@ nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{b
   .top-in{flex-wrap:wrap;padding:10px 14px}nav.tabs{order:3;margin:0;width:100%;overflow-x:auto}.who .em{display:none}
   main{padding:16px 14px 48px}.banner .txt{padding:22px 20px}.road{grid-template-columns:repeat(9,118px)}.banner .img{width:100%;opacity:.35}.qgrid{grid-template-columns:1fr}.search{min-width:0;width:100%}
 }
-.sp-btn{margin-left:auto;font-size:13px;padding:6px 12px}
+.sp-btns{margin-left:auto;display:inline-flex;gap:6px}.sp-btns .btn{font-size:13px;padding:6px 12px}
+.prtab td.c{text-align:center}.prtab input[type=checkbox]{width:20px;height:20px;accent-color:#1f3d2b}.prtab .short{color:#b42318;font-size:12px;font-weight:600}.prtab .full{color:#1f8a4c;font-size:12px;font-weight:600}
+@media (max-width:700px){.prtab tr{grid-template-columns:1fr 1fr 1fr}.prtab td.it{grid-column:1/-1}}
 dialog.ckdlg.spdlg{width:min(1000px,96vw);max-height:90vh}
 .spwrap{padding:20px 22px;display:grid;gap:12px}
 .sptab{width:100%;border-collapse:collapse;font-size:14px}.sptab th{text-align:left;font-size:12px;color:#fff;font-weight:600;padding:6px}
@@ -497,6 +499,9 @@ dialog.ckdlg.spdlg{width:min(1000px,96vw);max-height:90vh}
   </main>
 </div>
 
+<dialog id="prDialog" class="ckdlg spdlg"><div class="spwrap"><div class="ckdlg-title" id="prTitle">Procurement</div><p class="ckdlg-intro">Items bought for this event only. Changes save automatically.</p>
+  <div id="prBody"></div>
+  <div class="ckdlg-actions"><button class="btn btn-primary" type="button" id="prAdd">+ Add item</button><button class="btn btn-ghost" type="button" id="prCsv">Export CSV</button><button class="btn btn-ghost" type="button" id="prClose">Close</button></div></div></dialog>
 <dialog id="spDialog" class="ckdlg spdlg"><div class="spwrap"><div class="ckdlg-title" id="spTitle">Sponsors</div><p class="ckdlg-intro">Sponsors for this event only. Add as many as you need; changes save automatically.</p>
   <datalist id="spRoles"><option value="Title sponsor"><option value="Presented by"><option value="Powered by"><option value="Partnered by"><option value="Associate sponsor"><option value="Hospitality partner"><option value="Beverage partner"><option value="Hole sponsor"><option value="Prize sponsor"><option value="Media partner"></datalist>
   <div id="spBody"></div>
@@ -1305,6 +1310,84 @@ document.addEventListener("click", async e => {
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = `IGC-${c.name}-sponsors.csv`; a.click();
   }
 });
+
+const PR = { city: null, rows: [] };
+async function openProcurement(cid){
+  PR.city = cid; const c = cityById(cid);
+  $("#prTitle").textContent = `Procurement · IGC ${c.name}`;
+  $("#prBody").innerHTML = `<div class="loading">Loading…</div>`; $("#prDialog").showModal();
+  const { data, error } = await supabaseClient.from("procurement").select("*").eq("city_id", cid).order("sort_order").order("id");
+  if(error){ $("#prBody").innerHTML = `<p class="prob">${esc(error.message)}</p>`; return; }
+  PR.rows = data || []; drawProcurement();
+}
+const prNum = v => v == null || v === "" ? "" : (+v % 1 ? +v : Math.round(+v));
+function prState(r){
+  if(r.qty_ordered == null || r.qty_received == null) return "";
+  const d = +r.qty_ordered - +r.qty_received;
+  return d > 0 ? `<span class="short">${prNum(d)} short</span>` : d < 0 ? `<span class="short">${prNum(-d)} extra</span>` : `<span class="full">All received</span>`;
+}
+function prTotals(){
+  const R = PR.rows, paid = R.reduce((a, r) => a + (+r.amount_paid || 0), 0), chk = R.filter(r => r.checked).length;
+  const short = R.filter(r => r.qty_ordered != null && r.qty_received != null && +r.qty_received < +r.qty_ordered).length;
+  return `<div class="sptot"><span>${R.length} item${R.length===1?"":"s"}</span><span>Total paid <b>${inr(paid)}</b></span><span class="muted">Checked ${chk}/${R.length}</span>${short?`<span class="muted">${short} not fully received</span>`:""}</div>`;
+}
+function drawProcurement(){
+  const R = PR.rows;
+  $("#prBody").innerHTML = R.length ? `${prTotals()}
+    <table class="sptab prtab"><thead><tr><th>Item name</th><th>No. ordered</th><th>No. received</th><th>Checked</th><th>Amount paid (₹)</th><th></th></tr></thead><tbody>
+    ${R.map(r => `<tr data-id="${r.id}"><td class="it"><input data-f="item" value="${esc(r.item||"")}" placeholder="e.g. Golf balls (dozen)" aria-label="Item name"></td>
+      <td><input data-f="qty_ordered" type="number" min="0" value="${prNum(r.qty_ordered)}" placeholder="0" aria-label="Number ordered"></td>
+      <td><input data-f="qty_received" type="number" min="0" value="${prNum(r.qty_received)}" placeholder="0" aria-label="Number received"><div class="st">${prState(r)}</div></td>
+      <td class="c"><input data-f="checked" type="checkbox" ${r.checked?"checked":""} aria-label="Checked"></td>
+      <td><input data-f="amount_paid" class="amt" type="number" min="0" step="100" value="${r.amount_paid ?? ""}" placeholder="0" aria-label="Amount paid in rupees"></td>
+      <td><button type="button" class="del" aria-label="Remove item">×</button> <span class="ok"></span></td></tr>`).join("")}</tbody></table>`
+    : `<div class="empty"><p>No items yet for this event. Click <b>+ Add item</b>.</p></div>`;
+  $("#prBody").querySelectorAll("tr[data-id]").forEach(tr => {
+    const id = +tr.dataset.id, r = PR.rows.find(x => x.id === id), ok = tr.querySelector(".ok");
+    const save = async (f, v) => {
+      ok.textContent = "…";
+      const { error } = await supabaseClient.from("procurement").update({ [f]: v, updated_by: meName(), updated_at: new Date().toISOString() }).eq("id", id);
+      if(error){ ok.textContent = "!"; ok.title = error.message; return; }
+      r[f] = v; ok.textContent = "✓";
+      const st = tr.querySelector(".st"); if(st) st.innerHTML = prState(r);
+      const tt = $("#prBody .sptot"); if(tt) tt.outerHTML = prTotals();
+    };
+    tr.querySelectorAll("[data-f]").forEach(inp => {
+      const f = inp.dataset.f;
+      if(inp.type === "checkbox"){ inp.addEventListener("change", () => save(f, inp.checked)); return; }
+      let t; inp.addEventListener("input", () => {
+        clearTimeout(t); ok.textContent = "…";
+        t = setTimeout(() => {
+          let v = inp.value.trim();
+          if(f === "item"){ if(!v){ ok.textContent = "!"; ok.title = "Item name is required"; return; } return save(f, v); }
+          save(f, v === "" ? null : Math.max(0, +v));
+        }, 600);
+      });
+    });
+    tr.querySelector(".del").addEventListener("click", async e => {
+      const b = e.currentTarget;
+      if(!b.classList.contains("armed")){ b.classList.add("armed"); b.textContent = "Delete?"; setTimeout(() => { if(b.isConnected){ b.classList.remove("armed"); b.textContent = "×"; } }, 3000); return; }
+      const { error } = await supabaseClient.from("procurement").delete().eq("id", id);
+      if(error) return toast(error.message);
+      PR.rows = PR.rows.filter(x => x.id !== id); drawProcurement();
+    });
+  });
+}
+document.addEventListener("click", async e => {
+  if(e.target.id === "prOpen") openProcurement(CK.city);
+  if(e.target.id === "prClose") $("#prDialog").close();
+  if(e.target.id === "prAdd"){
+    const { data, error } = await supabaseClient.from("procurement").insert({ city_id: PR.city, item: "New item", sort_order: PR.rows.reduce((m, r) => Math.max(m, r.sort_order), 0) + 1, updated_by: meName() }).select().single();
+    if(error) return toast(error.message);
+    PR.rows.push(data); drawProcurement();
+    const last = $("#prBody").querySelector("tr[data-id]:last-child input[data-f=item]"); if(last){ last.focus(); last.select(); }
+  }
+  if(e.target.id === "prCsv"){
+    const q = v => `"${String(v ?? "").replace(/"/g,'""')}"`, c = cityById(PR.city);
+    const csv = ["City,Item,No. ordered,No. received,Checked,Amount paid (INR)", ...PR.rows.map(r => [c.name, r.item, r.qty_ordered, r.qty_received, r.checked ? "Yes" : "No", r.amount_paid].map(q).join(","))].join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = `IGC-${c.name}-procurement.csv`; a.click();
+  }
+});
 async function renderChecklist(){
   const L = legs(), v = $("#v-checklist");
   if(CK.city == null){ CK.city = (L.find(c => c.scoring_open) || L.find(c => c.status !== "completed") || L[0]).id; }
@@ -1321,7 +1404,7 @@ async function renderChecklist(){
     <div class="h-row"><h2>Operations checklist</h2><span class="sub">Tournament-day points for the ISL team. Everyone signed in as admin sees the same list.</span></div><div class="hr"></div>
     <div class="toolbar"><div class="chips" id="ckChips">${L.map(x => `<button class="chip ${x.id===c.id?"on":""}" data-c="${x.id}">${esc(x.name)}</button>`).join("")}</div></div>
     <div class="ck-top">
-      <div class="ckpanel"><h3>Event details · IGC ${esc(c.name)}<button type="button" class="btn btn-ghost sp-btn" id="spOpen">Sponsors</button></h3>
+      <div class="ckpanel"><h3>Event details · IGC ${esc(c.name)}<span class="sp-btns"><button type="button" class="btn btn-ghost" id="prOpen">Procurement</button><button type="button" class="btn btn-ghost" id="spOpen">Sponsors</button></span></h3>
         <table class="ed"><tbody id="edBody">${CK.details.map(d => `<tr data-id="${d.id}">
           <td class="l"><input data-f="label" value="${esc(d.label)}" aria-label="Detail name"></td>
           <td><input data-f="value" value="${esc(d.value||"")}" placeholder="—" aria-label="${esc(d.label)} value" title="${esc(fmtDetail(d)||"")}"></td>
