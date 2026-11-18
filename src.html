@@ -477,6 +477,7 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid #9aa79c;border-top-color:#1f3d2b;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-1px;margin-right:6px}@keyframes sp{to{transform:rotate(360deg)}}
 .rdsw .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#b9c3b6;margin-right:7px;vertical-align:middle}.rdsw[aria-pressed="true"] .dot{background:#5ee08f;box-shadow:0 0 0 3px rgba(94,224,143,.25)}
 .sigstamp{display:inline-flex;flex-direction:column;gap:1px;margin:8px 0 2px;padding:8px 14px;border:2px solid #1f6b3d;border-radius:8px;color:#1f6b3d;transform:rotate(-1.5deg);background:#f3faf5}.sigstamp.corrected{border-color:#25508f;color:#25508f;background:#f2f6fc}.sigstamp.mismatch{border-color:#b42318;color:#b42318;background:#fff5f4}.sig-k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}.sig-n{font-family:"Brush Script MT","Segoe Script","Snell Roundhand",cursive;font-size:26px;line-height:1.05}.sig-t{font-size:11px;opacity:.8}
+.lockmsg{font-weight:700;color:#1f6b3d;background:#e3f3e8;border-radius:8px;padding:9px 12px;margin-right:auto}.cmp input:disabled{background:#f6f8f4;color:#1f2a22;border-color:transparent;opacity:1}
 .ccnote{margin-top:14px;background:#f6f8f4;border:1px solid var(--line);border-left:4px solid #b8933a;border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.5}.ccnote .btn{font-size:12.5px;padding:5px 11px}
 .ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
 .csrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.csrow h4{margin:0 0 6px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -957,7 +958,7 @@ async function openCheck(pid, round = 1){
   const c = cityById(p.city_id), holes = courseOf(c);
   if(!holes.length) return toast("Set up the course card for this event first (Event setup).");
   if(!S.ev.get(c.id)) await loadEvent(c.id);
-  Object.assign(CC, { pid, round, p, c, holes, img: null, imagePath: null, read: null, name: "", prior: ccOf(pid) });
+  Object.assign(CC, { pid, round, p, c, holes, img: null, imagePath: null, read: null, name: "", prior: ccOf(pid), locked: false });
   $("#ccTitle").textContent = `Check paper card · ${p.full_name}`;
   $("#ccDialog").showModal();
   if(CC.prior && Array.isArray(CC.prior.read_scores) && CC.prior.read_scores.length){ await showSavedCheck(); return; }
@@ -974,8 +975,11 @@ async function showSavedCheck(){
     <b>${k.status === "verified" ? "Verified" : k.status === "corrected" ? "Corrected" : "Flagged for manual check"}</b> from ${esc(k.source === "csv" ? "CSV" : k.source)} by ${esc(k.signed_name || k.checked_by || "admin")}, ${when}.
     ${fixed.length ? `<br>${k.status === "corrected" ? "Changed from the player's entry" : "Didn't match"}: ${fixed.map(x => `hole ${x.hole} (entered ${x.entered ?? "–"} → card ${x.card ?? "?"})`).join(", ")}.` : k.status === "verified" ? " Every hole matched the player's entry." : ""}
     <button class="btn btn-ghost" id="ccNew" style="font-size:12px;padding:3px 9px;margin-left:6px">Check again with a new photo</button></div>`;
+  CC.locked = k.status === "verified" || k.status === "corrected";
   drawCompare(hist + stampHTML(k));
-  $("#ccNew")?.addEventListener("click", () => { CC.img = null; CC.imagePath = null; drawCheckStart(); });
+  $("#ccNew")?.addEventListener("click", () => {
+    if(CC.locked && !confirm(`This card was signed off by ${k.signed_name || "an admin"}. Checking it again will replace that signature when the new check is saved. Continue?`)) return;
+    CC.locked = false; CC.img = null; CC.imagePath = null; drawCheckStart(); });
 }
 function drawCheckStart(){
   const { c, prior } = CC, R = c.rounds_count || 1;
@@ -1081,27 +1085,27 @@ function drawCompare(note = ""){
       <tr><td class="lab">Par</td>${hs.map(h => `<td>${h.par}</td>`).join("")}<td>${hs.reduce((a,h)=>a+h.par,0)}</td></tr>
       <tr><td class="lab">Player entered</td>${hs.map(h => { const i = holes.indexOf(h); return `<td>${entered[i] ?? '<span class="muted">–</span>'}</td>`; }).join("")}<td><b>${hs.reduce((a,h)=>a+(entered[holes.indexOf(h)]||0),0)||"–"}</b></td></tr>
       <tr><td class="lab">${CC.manual?"Paper card (type)":"Read from card"}</td>${hs.map(h => { const i = holes.indexOf(h); const bad = read[i] !== entered[i];
-        return `<td class="${bad?"mm":"ok"}" data-i="${i}"><input inputmode="numeric" maxlength="2" value="${read[i] ?? ""}" aria-label="Hole ${h.hole} on paper card"></td>`; }).join("")}<td><b class="rtot">${hs.reduce((a,h)=>a+(read[holes.indexOf(h)]||0),0)||"–"}</b></td></tr>
+        return `<td class="${bad?"mm":"ok"}" data-i="${i}"><input inputmode="numeric" maxlength="2" value="${read[i] ?? ""}" aria-label="Hole ${h.hole} on paper card" ${CC.locked ? "disabled" : ""}></td>`; }).join("")}<td><b class="rtot">${hs.reduce((a,h)=>a+(read[holes.indexOf(h)]||0),0)||"–"}</b></td></tr>
     </tbody></table>`).join('<div style="height:8px"></div>');
   const render = () => {
     const bad = mm();
     $("#ccBody").innerHTML = `${note}<div class="${CC.img?"ccgrid":""}">
       ${CC.img ? `<div class="ccimg"><div class="ccimgwrap"><img src="${CC.img}" alt="Photo of the paper card" id="ccPhoto"></div><p class="muted" style="font-size:12px">Click the photo to zoom.${CC.name?` Name read on card: <b>${esc(CC.name)}</b>`:""}</p></div>` : ""}
       <div><div id="ccVerdict"></div>${table()}
-        <p class="muted" style="font-size:12.5px;margin:8px 0 0">Red boxes don't match what the player entered. Check them against the paper card and correct the bottom row if the reader got a digit wrong. On save, the paper card's numbers become the official scores.</p>
-        <div class="ckdlg-actions" style="justify-content:flex-start;flex-wrap:wrap">
+        <p class="muted" style="font-size:12.5px;margin:8px 0 0;${CC.locked ? "display:none" : ""}">Red boxes don't match what the player entered. Check them against the paper card and correct the bottom row if the reader got a digit wrong. On save, the paper card's numbers become the official scores.</p>
+        ${CC.locked ? `<div class="ckdlg-actions" style="justify-content:flex-start"><span class="lockmsg">🔒 Signed off. This card is locked.</span><button class="btn btn-ghost" id="ccClose2">Close</button></div>` : `<div class="ckdlg-actions" style="justify-content:flex-start;flex-wrap:wrap">
           <button class="btn btn-primary" id="ccSave"></button>
           <button class="btn btn-ghost" id="ccFlag" title="Leave it flagged for another admin to check">Flag for manual check</button>
           ${CC.img && !CC.manual ? '<button class="btn btn-ghost" id="ccRow">Pick a different row</button>' : ""}
           <button class="btn btn-ghost" id="ccAgain">Use another photo</button>
-          <button class="btn btn-ghost" id="ccClose2">Close</button></div></div></div>`;
+          <button class="btn btn-ghost" id="ccClose2">Close</button></div>`}</div></div>`;
     const upd = () => {
       const b = mm(), blanks = read.filter(v => v == null).length;
       $("#ccVerdict").innerHTML = !b.length ? `<div class="ccstatus ok"><b>All ${holes.length} holes match.</b> The paper card agrees with the player's entered scores.</div>`
         : `<div class="ccstatus bad"><b>${b.length} hole${b.length===1?" doesn't":"s don't"} match:</b> ${b.map(i => `hole ${holes[i].hole} (entered ${entered[i] ?? "–"}, card ${read[i] ?? "?"})`).join(", ")}.${blanks?` ${blanks} box${blanks===1?"":"es"} still empty.`:""}</div>`;
-      $("#ccSave").textContent = !b.length ? "Mark card verified" : "Save card scores as official";
+      if($("#ccSave")){ $("#ccSave").textContent = !b.length ? "Mark card verified" : "Save card scores as official";
       $("#ccSave").disabled = b.length > 0 && blanks > 0;
-      $("#ccSave").title = $("#ccSave").disabled ? "Fill every box from the paper card first" : "";
+      $("#ccSave").title = $("#ccSave").disabled ? "Fill every box from the paper card first" : ""; }
       $("#ccBody").querySelectorAll("td[data-i]").forEach(td => { const i = +td.dataset.i; td.className = read[i] !== entered[i] ? "mm" : "ok"; });
       $("#ccBody").querySelectorAll("table.cmp").forEach((t, k) => { const hs = nines[k]; const s = hs.reduce((a,h)=>a+(read[holes.indexOf(h)]||0),0); t.querySelector(".rtot").textContent = s || "–"; });
     };
@@ -1110,16 +1114,17 @@ function drawCompare(note = ""){
       if(inp.value.length >= (v >= 2 ? 1 : 2)){ const all = [...$("#ccBody").querySelectorAll("td[data-i] input")]; const nx = all[all.indexOf(inp)+1]; if(nx && v > 1){ nx.focus(); nx.select(); } }
     }));
     $("#ccPhoto")?.addEventListener("click", e => e.target.classList.toggle("zoom"));
-    $("#ccAgain").onclick = drawCheckStart; $("#ccClose2").onclick = () => $("#ccDialog").close();
+    if($("#ccAgain")) $("#ccAgain").onclick = drawCheckStart; $("#ccClose2").onclick = () => $("#ccDialog").close();
     $("#ccRepick")?.addEventListener("click", drawPickRow);
     $("#ccRow")?.addEventListener("click", drawPickRow);
-    $("#ccFlag").onclick = () => saveCheck("mismatch");
-    $("#ccSave").onclick = () => saveCheck(mm().length ? "corrected" : "verified");
+    if($("#ccFlag")) $("#ccFlag").onclick = () => saveCheck("mismatch");
+    if($("#ccSave")) $("#ccSave").onclick = () => saveCheck(mm().length ? "corrected" : "verified");
     upd();
   };
   render();
 }
 async function saveCheck(status){
+  if(CC.locked) return toast("This card is already signed off");
   const signed = await signerName(); if(!signed) return toast("Enter your name to sign this check");
   const { p, c, holes, round, read } = CC, entered = enteredFor(p.id, c.id, round, holes);
   const mism = holes.map((h,i) => ({ hole: h.hole, entered: entered[i], card: read[i] })).filter(x => x.entered !== x.card);
