@@ -472,6 +472,7 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 .cmp input{width:34px;text-align:center;font:inherit;font-weight:700;border:1px solid var(--line);border-radius:5px;padding:3px 0}
 .ccsum{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}.ccsum .big{font-size:18px;font-weight:800}
 .ccstatus{padding:10px 12px;border-radius:9px;font-size:14px}.ccstatus.ok{background:#e3f3e8;color:#1f6b3d}.ccstatus.bad{background:#fde4e1;color:#9b1c13}.ccstatus.info{background:#eef2f7;color:#334}
+.ccpick{position:relative;max-height:68vh;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:10px}.ccpick img{width:100%;display:block;cursor:crosshair}.ccband{position:absolute;left:0;right:0;background:rgba(31,61,43,.18);border-top:2px solid #1f3d2b;border-bottom:2px solid #1f3d2b;pointer-events:none}
 .ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
 .csrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.csrow h4{margin:0 0 6px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 @media (max-width:860px){.ccgrid{grid-template-columns:1fr}.ccimg{position:static}}
@@ -905,13 +906,57 @@ async function runRead(file){
     $("#ccMsg").textContent = "Checking the card reader…";
     const ping = await ocrPing();
     if(!ping.ok){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(ocrHelp(ping.why)); return; }
-    $("#ccMsg").textContent = `Reading the card with ${OCR.model}…`; $("#ccBar").style.width = "35%";
-    const tick = setInterval(() => { const b = $("#ccBar"); if(b) b.style.width = Math.min(92, parseFloat(b.style.width) + 4) + "%"; }, 1500);
-    let out; try{ out = await ocrRead(CC.img, CC.p, CC.c, CC.holes); } finally { clearInterval(tick); }
-    CC.read = out.scores || CC.holes.map(() => null); CC.name = out.name || "";
-    drawCompare(out.scores ? "" : `<div class="ccstatus bad">The reader couldn't pick out this player's scores. Type them from the photo below.</div>`);
+    drawPickRow();
   }catch(e){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(`<div class="ccstatus bad">Couldn't read the card: ${esc(e.message)}. Type the scores from the photo.</div>`); }
 }
+function drawPickRow(){
+  $("#ccBody").innerHTML = `<div class="ccstatus info"><b>Tap ${esc(CC.p.full_name)}'s score row</b> on the card: anywhere along the line of handwritten scores.</div>
+    <div class="ccpick"><img src="${CC.img}" alt="Photo of the paper card" id="ccPickImg"><div class="ccband" id="ccBand" hidden></div></div>
+    <div class="ckdlg-actions"><button class="btn btn-ghost" id="ccAgain2">Use another photo</button><button class="btn btn-ghost" id="ccManual2">Type it in by hand</button></div>`;
+  $("#ccAgain2").onclick = drawCheckStart;
+  $("#ccManual2").onclick = () => { CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(); };
+  const img = $("#ccPickImg");
+  img.addEventListener("mousemove", e => { const r = img.getBoundingClientRect(), b = $("#ccBand"); b.hidden = false; b.style.top = (e.clientY - r.top - r.height * 0.045) + "px"; b.style.height = (r.height * 0.09) + "px"; });
+  img.addEventListener("click", e => { const r = img.getBoundingClientRect(); readRowAt((e.clientY - r.top) / r.height); });
+}
+async function cropStrip(src, fy, half = 0.045){
+  const im = new Image(); im.src = src; await im.decode();
+  const W = im.naturalWidth, H = im.naturalHeight, y0 = Math.max(0, fy - half) * H, h = Math.min(H - y0, half * 2 * H), k = Math.min(2, 2400 / W);
+  const cv = document.createElement("canvas"); cv.width = Math.round(W * k); cv.height = Math.round(h * k);
+  cv.getContext("2d").drawImage(im, 0, y0, W, h, 0, 0, cv.width, cv.height);
+  return cv.toDataURL("image/jpeg", 0.92);
+}
+async function readRowAt(fy){
+  CC.rowY = fy;
+  $("#ccBody").innerHTML = `<div class="ccstatus info" id="ccMsg">Reading that row with ${esc(OCR.model)}…</div><div class="ccprog" style="margin-top:10px"><i id="ccBar" style="width:20%"></i></div><p class="muted" style="font-size:12.5px">Usually 5–20 seconds; the first card after starting the reader can take up to a minute.</p>`;
+  const tick = setInterval(() => { const b = $("#ccBar"); if(b) b.style.width = Math.min(92, parseFloat(b.style.width) + 5) + "%"; }, 1200);
+  try{
+    const strip = await cropStrip(CC.img, fy);
+    const out = await ocrReadStrip(strip, CC.holes.length);
+    CC.read = out.scores; CC.name = out.name || "";
+    const got = out.scores.filter(v => v != null).length;
+    drawCompare(got ? "" : `<div class="ccstatus bad">Couldn't read digits in that row. <button class="btn btn-ghost" id="ccRepick" style="font-size:12px;padding:3px 9px">Tap the row again</button> or type the scores from the photo.</div>`);
+  }catch(e){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(`<div class="ccstatus bad">Couldn't read the card: ${esc(e.message)}. Type the scores from the photo.</div>`); }
+  finally{ clearInterval(tick); }
+}
+async function ocrReadStrip(dataUrl, n){
+  const nine = n > 9;
+  const prompt = nine
+    ? "This is one row cut from a golf scorecard. It shows a player's name and then one handwritten digit in each hole box: 9 boxes, then an OUT box, then 9 more boxes, then IN/TOTAL boxes. Write the name, then the 9 front-nine digits separated by spaces, then the 9 back-nine digits separated by spaces. Format exactly: NAME | d d d d d d d d d | d d d d d d d d d"
+    : `This is one row cut from a golf scorecard. It shows a player's name and then one handwritten digit in each of ${n} hole boxes, then a TOTAL box. Write the name, then the ${n} hole digits separated by spaces. Format exactly: NAME | ${Array(n).fill("d").join(" ")}`;
+  const r = await fetch(OCR.url + "/api/chat", { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ model: OCR.model, stream: false, options: { temperature: 0, num_predict: 200 }, think: false,
+      messages: [{ role: "user", content: prompt, images: [dataUrl.split(",")[1]] }] }) });
+  if(!r.ok) throw new Error(`card reader answered ${r.status}`);
+  const txt = ((await r.json()).message?.content || "").replace(/```\w*/g, "").trim();
+  const parts = txt.split("|").map(x => x.trim());
+  const digits = t => (t.match(/\d+|\?/g) || []).flatMap(x => x === "?" ? [null] : (x.length > 1 && x.length <= 2 && +x <= 15 ? [+x] : x.split("").map(Number))).map(v => v == null || v < 1 ? null : v);
+  let scores;
+  if(nine && parts.length >= 3){ const a = digits(parts[1]), b = digits(parts[2]); scores = [...pad(a, 9), ...pad(b, n - 9)]; }
+  else { scores = pad(digits(parts.slice(1).join(" ")), n); }
+  return { name: parts.length > 1 ? parts[0] : "", scores, raw: txt };
+}
+const pad = (a, n) => { const x = a.slice(0, n); while(x.length < n) x.push(null); return x; };
 function drawCompare(note = ""){
   const { p, c, holes, round } = CC, entered = enteredFor(p.id, c.id, round, holes), read = CC.read;
   const nines = holes.length > 9 ? [holes.slice(0,9), holes.slice(9)] : [holes];
@@ -931,6 +976,7 @@ function drawCompare(note = ""){
         <div class="ckdlg-actions" style="justify-content:flex-start;flex-wrap:wrap">
           <button class="btn btn-primary" id="ccSave"></button>
           <button class="btn btn-ghost" id="ccFlag" title="Leave it flagged for another admin to check">Flag for manual check</button>
+          ${CC.img && !CC.manual ? '<button class="btn btn-ghost" id="ccRow">Pick a different row</button>' : ""}
           <button class="btn btn-ghost" id="ccAgain">Use another photo</button>
           <button class="btn btn-ghost" id="ccClose2">Close</button></div></div></div>`;
     const upd = () => {
@@ -949,6 +995,8 @@ function drawCompare(note = ""){
     }));
     $("#ccPhoto")?.addEventListener("click", e => e.target.classList.toggle("zoom"));
     $("#ccAgain").onclick = drawCheckStart; $("#ccClose2").onclick = () => $("#ccDialog").close();
+    $("#ccRepick")?.addEventListener("click", drawPickRow);
+    $("#ccRow")?.addEventListener("click", drawPickRow);
     $("#ccFlag").onclick = () => saveCheck("mismatch");
     $("#ccSave").onclick = () => saveCheck(mm().length ? "corrected" : "verified");
     upd();
