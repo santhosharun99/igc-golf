@@ -1,7 +1,7 @@
 /* IGC service worker: makes the app installable and keeps it opening when signal is weak.
  * Pages and scripts: network first (so updates arrive), cached copy when offline.
  * Supabase data/API calls are never cached. Video frames: cache first. */
-const VERSION = "igc-v16";
+const VERSION = "igc-v17";
 const SHELL = ["./login.html", "./play.html", "./app.html", "./index.html", "./scoring.js", "./ckimport.js", "./regimport.js", "./pwa.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"];
 
@@ -23,7 +23,7 @@ self.addEventListener("fetch", e => {
   const lib = url.hostname === "esm.sh" || url.hostname.endsWith("jsdelivr.net") || url.hostname.endsWith("googleapis.com") || url.hostname.endsWith("gstatic.com");
   if (!sameOrigin && !lib) return;
   e.respondWith(
-    fetch(req).then(r => {
+    fetch(sameOrigin ? new Request(req, { cache: "no-cache" }) : req).then(r => {
       if (r.ok || r.type === "opaque") { const cp = r.clone(); caches.open(VERSION).then(c => c.put(req, cp)); }
       return r;
     }).catch(() => caches.match(req, { ignoreSearch: req.mode === "navigate" }).then(hit => hit || (req.mode === "navigate" ? caches.match("./login.html") : undefined)))
