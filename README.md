@@ -60,6 +60,13 @@ Set per event in **Event setup → Competition format**:
 - Click any heading, subheading or point to rename it. Changes sync for every admin (refreshes every 20 s).
 - Tables: `checklist_items`, `event_details`, `team_members` (admins only; players can't see them).
 
+## Checklist import (Checklist → Import CSV / Excel)
+- Accepts .csv, .tsv, .txt, .xlsx/.xls (the fullest sheet is used) or rows pasted from any sheet.
+- Works out the structure from messy files: columns are recognised by meaning (Section/Department/Area → heading; Workstream/Sub area/Group → subheading; Task/Item/Description → point; Owner/Responsible/POC → assign to; Status/Done → status). Without a header row, columns are guessed from the data. Section titles on their own rows (CAPS, "1." or "Title:" → heading; "1.1" → subheading) work too, as do blank cells left by merged cells (filled down), numbering and bullets (stripped), and rows in any order (grouped by heading).
+- **Preview before saving:** column roles can be changed from dropdowns and the preview tree updates live. Warnings cover duplicates, points with no heading (put under "General") and owners not on the team (optionally added to the team).
+- Import adds to the list: existing headings and subheadings are reused, and points already there are skipped. **Undo import** removes the last import.
+- Logic lives in `ckimport.js`. Tested on the 438-point ARHM marathon checklist in 4 layouts (clean; renamed/reordered/shuffled with semicolons; grouped section rows; no header with merged-cell blanks): every point landed under the right heading and subheading.
+
 ## 3. Updating data
 Use **Table Editor** in Supabase:
 - **Opening a city:** set its `registration_status` to `open`, then add players to `participants` with that `city_id`. Set it to `closed` when entries close.

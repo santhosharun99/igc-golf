@@ -335,6 +335,41 @@ table.card9 .tot small{display:block;font-weight:500;font-size:10.5px;color:var(
 .ckempty{padding:14px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
 .inl{font:inherit;width:100%;border:1px solid var(--olive);border-radius:6px;padding:4px 7px;color:var(--ink);background:#fff}
 .ckhead>.hh .inl{color:var(--ink);font-family:var(--serif);font-size:16px}
+.impbar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fbf8ee;border:1px solid #eadfb8;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px}
+.impbar .armed{background:#fbeaea;color:#9b2c2c;border-color:#e8c3c3}
+dialog.ckdlg.impdlg{width:min(1080px,96vw);max-height:92vh}
+.impwrap{padding:20px 22px;display:grid;gap:14px}
+.imphead{display:flex;justify-content:space-between;gap:12px}.imphead .cm-close{position:static;flex:none}
+.impsrc{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:22px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer;display:grid;gap:6px;place-items:center}
+.drop:hover,.drop.over{border-color:var(--olive);background:var(--sage-2)}
+.drop b{color:var(--forest);font-size:14px}
+.impsrc textarea{font:13px ui-monospace,Menlo,monospace;border:1px solid var(--line);border-radius:10px;padding:10px;min-height:120px;resize:vertical}
+.maptbl{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.mapcol{min-width:150px;max-width:200px;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;background:#fff}
+.mapcol .h{font-weight:700;color:var(--forest);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mapcol .s{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:2px 0 6px}
+.mapcol select{width:100%;font:inherit;font-size:12.5px;border:1px solid var(--line);border-radius:6px;padding:5px}
+.mapcol.r-point{border-color:var(--forest);box-shadow:inset 0 3px 0 var(--forest)}.mapcol.r-heading{box-shadow:inset 0 3px 0 var(--gold)}.mapcol.r-subheading{box-shadow:inset 0 3px 0 var(--olive)}.mapcol.r-assignee{box-shadow:inset 0 3px 0 var(--teal)}.mapcol.r-ignore{opacity:.55}
+.impwarn{background:#fbf3e3;color:#7a5f10;border-radius:8px;padding:8px 12px;font-size:12.5px}
+.impwarn div+div{margin-top:3px}
+.impsum{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;align-items:center}
+.impsum b{font-size:18px;color:var(--forest)}
+.imptree{border:1px solid var(--line);border-radius:10px;max-height:46vh;overflow:auto;font-size:13px}
+.imptree details{border-bottom:1px solid var(--line)}
+.imptree summary{padding:9px 12px;cursor:pointer;background:var(--forest);color:#fff;font-weight:600;display:flex;gap:8px}
+.imptree summary .c{margin-left:auto;font-weight:400;opacity:.85;font-size:12px}
+.imptree .sh{padding:6px 12px;background:var(--sage-2);font-weight:700;color:var(--forest);font-size:12.5px;display:flex}
+.imptree .sh .c{margin-left:auto;font-weight:400;color:var(--muted)}
+.imptree .pt{padding:5px 12px 5px 26px;border-top:1px solid #eef1ec;display:flex;gap:10px}
+.imptree .pt span:first-child{flex:1}
+.imptree .pt .who{color:var(--teal);font-size:12px;white-space:nowrap}.imptree .pt .who.x{color:#a8781a}
+.imptree .pt .stt{font-size:11px;font-weight:700;color:#2f7d46}.imptree .pt .stt.blocked{color:#a23b2b}
+.imptree .more{padding:5px 26px;color:var(--muted);font-size:12px}
+.impfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.impfoot label{font-size:13px;display:flex;gap:6px;align-items:center}
+.impfoot .sp{flex:1}
+@media (max-width:760px){.impsrc{grid-template-columns:1fr}}
 dialog.ckdlg{border:0;border-radius:14px;padding:0;width:min(520px,94vw);box-shadow:0 30px 80px rgba(0,0,0,.25)}
 dialog.ckdlg::backdrop{background:rgba(26,40,29,.45)}
 .ckdlg form{padding:20px 22px}
@@ -448,6 +483,10 @@ nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{b
 
 <dialog id="ckDialog" class="ckdlg"><form id="ckForm" method="dialog"><div class="ckdlg-title" id="ckDlgTitle">Add a checklist point</div><p class="ckdlg-intro" id="ckDlgIntro"></p><div class="ckdlg-fields" id="ckDlgFields"></div>
   <div class="ckdlg-actions"><button class="btn btn-primary" type="submit" id="ckDlgOk">Add</button><button class="btn btn-ghost" type="button" id="ckDlgCancel">Cancel</button></div></form></dialog>
+<dialog id="impDialog" class="ckdlg impdlg"><div class="impwrap">
+  <div class="imphead"><div><div class="ckdlg-title">Import checklist</div><p class="ckdlg-intro">CSV, Excel or a paste from any sheet. Messy is fine: you'll see exactly how it will be arranged before anything is saved.</p></div><button type="button" class="cm-close" id="impClose" aria-label="Close">×</button></div>
+  <div id="impBody"></div>
+</div></dialog>
 <div id="cardModal" class="cm hidden" role="dialog" aria-modal="true" aria-label="Scorecard">
   <div class="cm-panel"><button class="cm-close" aria-label="Close">×</button><div class="cm-body"></div></div>
 </div>
@@ -455,6 +494,7 @@ nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{b
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.119.0";
 import * as G from "./scoring.js";
+import * as IMP from "./ckimport.js";
 
 /* Supabase project "IGC". The publishable key is safe in the browser; Row Level Security protects the data. */
 const SUPABASE_URL = "https://xivczksxmxarkqbwolth.supabase.co";
@@ -1174,6 +1214,7 @@ async function renderChecklist(){
       <select id="ckWho" aria-label="Filter by person"><option value="all">Everyone</option><option value="none">Unassigned</option>${CK.team.map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select>
       <button class="btn btn-primary" id="ckAddPoint">+ Add point</button>
       <button class="btn btn-ghost" id="ckAddHead">+ Heading</button>
+      <button class="btn btn-ghost" id="ckImport">Import CSV / Excel</button>
       <button class="btn btn-ghost" id="ckTeam">Team (${CK.team.length})</button>
       <button class="btn btn-ghost" id="ckCsv">Export CSV</button>
     </div>
@@ -1190,6 +1231,22 @@ async function renderChecklist(){
   $("#ckAddHead").addEventListener("click", () => ckDialog("heading"));
   if($("#ckFirst")) $("#ckFirst").addEventListener("click", () => ckDialog("heading"));
   $("#ckTeam").addEventListener("click", () => ckDialog("team"));
+  $("#ckImport").addEventListener("click", openImport);
+  const lastBatch = [...new Set(CK.items.filter(i => i.import_batch).map(i => i.import_batch))].sort().pop();
+  if(lastBatch){
+    const n = CK.items.filter(i => i.import_batch === lastBatch && i.kind === "point").length, when = new Date(+lastBatch.split("-")[1]);
+    const bar = document.createElement("div"); bar.className = "impbar";
+    bar.innerHTML = `<span>Last import: <b>${n} points</b> · ${fmtTime(when)}</span><button type="button" class="btn btn-ghost" id="ckUndo">Undo import</button>`;
+    $("#ckTree").before(bar);
+    $("#ckUndo").addEventListener("click", async e => {
+      const b = e.currentTarget;
+      if(!b.classList.contains("armed")){ b.classList.add("armed"); b.textContent = `Remove all ${n} imported points?`; setTimeout(() => { if(b.isConnected){ b.classList.remove("armed"); b.textContent = "Undo import"; } }, 3500); return; }
+      b.disabled = true;
+      const { error } = await supabaseClient.from("checklist_items").delete().eq("import_batch", lastBatch);
+      if(error){ b.disabled = false; return toast(error.message); }
+      await ckLoad(CK.city); renderChecklist(); toast("Import undone");
+    });
+  }
   $("#ckCsv").addEventListener("click", ckCsv);
   // event details: save on change
   v.querySelectorAll("#edBody tr").forEach(tr => {
@@ -1368,6 +1425,98 @@ setInterval(async () => {
   if(document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
   try{ await ckLoad(CK.city); renderChecklist(); }catch(e){}
 }, 20000);
+
+/* ---------- checklist import ---------- */
+const IM = { text: "", res: null, mapping: null, name: "" };
+function openImport(){
+  IM.text = ""; IM.res = null; IM.mapping = null; IM.name = "";
+  drawImport(); $("#impDialog").showModal();
+  $("#impClose").onclick = () => $("#impDialog").close();
+}
+async function readFile(f){
+  IM.name = f.name;
+  if(/\.(xlsx|xls|xlsm|ods)$/i.test(f.name)){
+    const XLSX = await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
+    const wb = XLSX.read(await f.arrayBuffer(), { type: "array" });
+    // pick the sheet with the most filled cells
+    const best = wb.SheetNames.map(n => [n, XLSX.utils.sheet_to_csv(wb.Sheets[n], { blankrows: true })]).sort((a,b) => b[1].replace(/[,\s]/g,"").length - a[1].replace(/[,\s]/g,"").length)[0];
+    return best[1];
+  }
+  return await f.text();
+}
+function analyseNow(){ IM.res = IM.text.trim() ? IMP.analyse(IM.text, CK.team, IM.mapping) : null; if(IM.res) IM.mapping = IM.res.mapping; }
+function drawImport(){
+  const B = $("#impBody"), c = cityById(CK.city), r = IM.res;
+  if(!r){
+    B.innerHTML = `<div class="impsrc">
+      <label class="drop" id="impDrop"><b>Choose a file</b><span>or drop it here · .csv, .xlsx, .xls, .tsv, .txt</span><input type="file" id="impFile" accept=".csv,.tsv,.txt,.xlsx,.xls,.xlsm,.ods" hidden></label>
+      <div><textarea id="impPaste" placeholder="…or paste rows copied from Excel / Google Sheets here"></textarea><div class="actions" style="margin-top:6px"><button class="btn btn-primary" id="impPasteGo">Preview paste</button></div></div></div>
+      <p class="hint">Works with headings in their own column, section titles on their own rows (e.g. <i>MEDICAL &amp; SAFETY</i>, <i>1.1 Ambulance</i>), blank cells from merged cells, numbering and bullets, and rows in any order. Into: <b>IGC ${esc(c.name)}</b>.</p>`;
+    const drop = $("#impDrop"), fin = $("#impFile");
+    const take = async f => { if(!f) return; try{ IM.text = await readFile(f); IM.mapping = null; analyseNow(); drawImport(); }catch(e){ toast("Couldn't read that file: " + e.message); } };
+    fin.addEventListener("change", () => take(fin.files[0]));
+    drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+    drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); take(e.dataTransfer.files[0]); });
+    $("#impPasteGo").addEventListener("click", () => { IM.text = $("#impPaste").value; IM.name = "pasted rows"; IM.mapping = null; analyseNow(); if(IM.res) drawImport(); else toast("Paste some rows first"); });
+    return;
+  }
+  const head = r.headerIdx >= 0 ? r.rows[r.headerIdx] : [];
+  const body = r.rows.slice(r.headerIdx + 1);
+  const width = r.mapping.length;
+  const sample = ci => body.map(x => x[ci]).filter(Boolean).slice(0, 2).join(" · ");
+  const LBL = { heading: "Heading", subheading: "Subheading", point: "Checklist point", assignee: "Assign to", status: "Status", note: "Note", ignore: "Ignore" };
+  const subs = r.tree.reduce((n,h) => n + h.subs.length, 0);
+  const assigned = r.tree.reduce((n,h) => n + [...h.points, ...h.subs.flatMap(s => s.points)].filter(p => p.assignee_id).length, 0);
+  const ptRow = p => `<div class="pt"><span>${esc(p.title)}</span>${p.status!=="open"?`<span class="stt ${p.status}">${p.status}</span>`:""}${p.assignee_raw?`<span class="who ${p.assignee_id?"":"x"}">${esc(p.assignee_id ? ckName(p.assignee_id) : p.assignee_raw + " ?")}</span>`:""}</div>`;
+  const pts = (list, cap) => list.slice(0, cap).map(ptRow).join("") + (list.length > cap ? `<div class="more">+ ${list.length - cap} more</div>` : "");
+  B.innerHTML = `
+    <div class="impsum"><span>From <b style="font-size:14px">${esc(IM.name)}</b></span><span><b>${r.tree.length}</b> headings</span><span><b>${subs}</b> subheadings</span><span><b>${r.points}</b> points</span><span><b>${assigned}</b> assigned</span><span class="sp"></span><button class="btn btn-ghost" id="impRestart">Choose another file</button></div>
+    <div><div class="hint" style="margin:0 0 6px">Columns found${r.headerIdx >= 0 ? "" : " (no header row, guessed from the data)"}. Change any that look wrong; the preview updates instantly.</div>
+      <div class="maptbl">${Array.from({length: width}, (_, ci) => `<div class="mapcol r-${r.mapping[ci]}"><div class="h">${esc(head[ci] || `Column ${ci+1}`)}</div><div class="s" title="${esc(sample(ci))}">${esc(sample(ci)) || "—"}</div>
+        <select data-ci="${ci}">${IMP.ROLES.map(k => `<option value="${k}" ${r.mapping[ci]===k?"selected":""}>${LBL[k]}</option>`).join("")}</select></div>`).join("")}</div></div>
+    ${r.warnings.length ? `<div class="impwarn">${r.warnings.map(w => `<div>⚠ ${esc(w)}</div>`).join("")}</div>` : ""}
+    <div class="imptree">${r.tree.map((h, i) => `<details ${i < 2 ? "open" : ""}><summary>${String(i+1).padStart(2,"0")} · ${esc(h.title)}<span class="c">${h.subs.length} sub · ${h.points.length + h.subs.reduce((n,s)=>n+s.points.length,0)} points</span></summary>
+      ${pts(h.points, 6)}${h.subs.map(sh => `<div class="sh">${esc(sh.title)}<span class="c">${sh.points.length}</span></div>${pts(sh.points, 4)}`).join("")}</details>`).join("") || `<div class="more">Nothing to import yet. Set one column as "Checklist point".</div>`}</div>
+    <div class="impfoot">
+      ${r.unmatched.length ? `<label><input type="checkbox" id="impAddPeople" checked> Add ${r.unmatched.length} new name${r.unmatched.length>1?"s":""} to the team (${esc(r.unmatched.slice(0,4).join(", "))}${r.unmatched.length>4?"…":""})</label>` : ""}
+      <span class="sp"></span><span class="hint" style="margin:0">Adds to IGC ${esc(c.name)}'s list. Points already there are skipped, nothing existing is changed, and you can undo it.</span>
+      <button class="btn btn-primary" id="impGo" ${r.points?"":"disabled"}>Import ${r.points} points</button></div>`;
+  B.querySelectorAll(".mapcol select").forEach(sel => sel.addEventListener("change", () => { IM.mapping = r.mapping.slice(); IM.mapping[+sel.dataset.ci] = sel.value; analyseNow(); drawImport(); }));
+  $("#impRestart").addEventListener("click", () => { IM.res = null; IM.text = ""; drawImport(); });
+  $("#impGo").addEventListener("click", async e => { const b = e.currentTarget; b.disabled = true; b.textContent = "Importing…";
+    try{ const out = await runImport(r, $("#impAddPeople")?.checked); $("#impDialog").close(); await ckLoad(CK.city); renderChecklist(); toast(`Imported ${out.added} points${out.skipped ? ` · ${out.skipped} already in the list, skipped` : ""}`); }
+    catch(err){ b.disabled = false; b.textContent = `Import ${r.points} points`; toast("Import failed: " + err.message); } });
+}
+async function runImport(r, addPeople){
+  const batch = "imp-" + Date.now(), me = meName(), now = new Date().toISOString();
+  // people
+  const people = new Map();
+  if(addPeople && r.unmatched.length){
+    const rows = r.unmatched.map(n => ({ name: n.replace(/\s*\(.*?\)\s*/g, " ").trim() || n, role: "Imported" }));
+    const { data, error } = await supabaseClient.from("team_members").insert(rows).select(); if(error) throw error;
+    r.unmatched.forEach((raw, i) => people.set(raw, data[i].id)); CK.team.push(...data);
+  }
+  let order = nextOrder();
+  const ins = async rows => { if(!rows.length) return []; const out = []; for(let i = 0; i < rows.length; i += 400){ const { data, error } = await supabaseClient.from("checklist_items").insert(rows.slice(i, i + 400)).select("id,title,parent_id,kind"); if(error) throw error; out.push(...data); } return out; };
+  const base = { city_id: CK.city, created_by: me, import_batch: batch };
+  // headings: reuse an existing one with the same name
+  const hId = new Map(kids(null, "heading").map(h => [h.title.toLowerCase(), h.id]));
+  const newH = await ins(r.tree.filter(h => !hId.has(h.title.toLowerCase())).map(h => ({ ...base, kind: "heading", parent_id: null, title: h.title, sort_order: order++ })));
+  newH.forEach(h => hId.set(h.title.toLowerCase(), h.id));
+  // subheadings
+  const sKey = (pid, t) => pid + "|" + t.toLowerCase(), sId = new Map(CK.items.filter(i => i.kind === "subheading").map(s => [sKey(s.parent_id, s.title), s.id]));
+  const subRows = []; r.tree.forEach(h => { const pid = hId.get(h.title.toLowerCase()); h.subs.forEach(s => { if(!sId.has(sKey(pid, s.title))) subRows.push({ ...base, kind: "subheading", parent_id: pid, title: s.title, sort_order: order++ }); }); });
+  (await ins(subRows)).forEach(s => sId.set(sKey(s.parent_id, s.title), s.id));
+  // points, in file order
+  const pRows = [], have = new Set(CK.items.filter(i => i.kind === "point").map(i => i.parent_id + "|" + i.title.toLowerCase())); let skipped = 0;
+  const pt = (p, parent) => { if(have.has(parent + "|" + p.title.toLowerCase())){ skipped++; return; } have.add(parent + "|" + p.title.toLowerCase()); pRows.push({ ...base, kind: "point", parent_id: parent, title: p.title, status: p.status, note: p.note,
+    assignee_id: p.assignee_id || (p.assignee_raw && people.get(p.assignee_raw)) || null,
+    done_by: p.status === "done" || p.status === "cancelled" ? "Imported" : null, done_at: p.status === "done" ? now : null, sort_order: order++ }); };
+  r.tree.forEach(h => { const pid = hId.get(h.title.toLowerCase()); h.points.forEach(p => pt(p, pid)); h.subs.forEach(s => s.points.forEach(p => pt(p, sId.get(sKey(pid, s.title))))); });
+  await ins(pRows);
+  return { added: pRows.length, skipped };
+}
 
 /* ---------- routing + shell ---------- */
 const VIEWS = ["dashboard","participants","scores","setup","checklist"];
