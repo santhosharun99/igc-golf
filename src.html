@@ -862,12 +862,14 @@ async function ocrRead(dataUrl, p, c, holes){
 }
 function enteredFor(pid, cid, round, holes){ const card = S.ev.get(cid)?.cards.get(pid) || new Map(); return holes.map(h => card.get(`${round}-${h.hole}`) ?? null); }
 const CC = {};
+async function signedPhoto(path){ if(!path) return null; const { data, error } = await supabaseClient.storage.from("scorecards").createSignedUrl(path, 600); if(error){ toast("Couldn't open the card photo: " + error.message); return null; } return data.signedUrl; }
+async function loadSavedPhoto(){ const path = CC.prior?.image_path; if(!path) return; const u = await signedPhoto(path); if(u){ CC.img = u; CC.imagePath = path; } }
 async function openCheck(pid, round = 1){
   const p = S.players.find(x => x.id === pid); if(!p) return;
   const c = cityById(p.city_id), holes = courseOf(c);
   if(!holes.length) return toast("Set up the course card for this event first (Event setup).");
   if(!S.ev.get(c.id)) await loadEvent(c.id);
-  Object.assign(CC, { pid, round, p, c, holes, img: null, read: null, name: "", prior: ccOf(pid) });
+  Object.assign(CC, { pid, round, p, c, holes, img: null, imagePath: null, read: null, name: "", prior: ccOf(pid) });
   $("#ccTitle").textContent = `Check paper card · ${p.full_name}`;
   $("#ccDialog").showModal();
   drawCheckStart();
@@ -875,7 +877,7 @@ async function openCheck(pid, round = 1){
 function drawCheckStart(){
   const { c, prior } = CC, R = c.rounds_count || 1;
   $("#ccBody").innerHTML = `
-    ${prior ? `<div class="ccstatus ${prior.status==="mismatch"?"bad":prior.status==="verified"?"ok":"info"}">Last check: <b>${prior.status==="mismatch"?`${(prior.mismatches||[]).length} mismatched holes`:prior.status}</b> from ${esc(prior.source)} by ${esc(prior.checked_by||"admin")}, ${new Date(prior.checked_at).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}.${prior.status==="mismatch"?` <button class="btn btn-ghost" id="ccResume" style="font-size:12px;padding:3px 9px">Fix those holes</button>`:""}</div>` : ""}
+    ${prior ? `<div class="ccstatus ${prior.status==="mismatch"?"bad":prior.status==="verified"?"ok":"info"}">Last check: <b>${prior.status==="mismatch"?`${(prior.mismatches||[]).length} mismatched holes`:prior.status}</b> from ${esc(prior.source)} by ${esc(prior.checked_by||"admin")}, ${new Date(prior.checked_at).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}.${prior.status==="mismatch"?` <button class="btn btn-ghost" id="ccResume" style="font-size:12px;padding:3px 9px">Fix those holes</button>`:""}${prior.image_path?` <button class="btn btn-ghost" id="ccPhotoView" style="font-size:12px;padding:3px 9px">View saved card photo</button>`:""}</div>` : ""}
     ${R > 1 ? `<label class="fld" style="max-width:200px">Round<select id="ccRound">${Array.from({length:R},(_,i)=>`<option value="${i+1}" ${CC.round===i+1?"selected":""}>Round ${i+1}</option>`).join("")}</select></label>` : ""}
     <div class="ccdrop" id="ccDrop">
       <p style="margin:0">Photograph the signed paper card flat, in good light, with the whole card in the frame.</p>
@@ -888,14 +890,15 @@ function drawCheckStart(){
   $("#ccRound")?.addEventListener("change", e => { CC.round = +e.target.value; });
   $("#ccCancel").onclick = () => $("#ccDialog").close();
   $("#ccManual").onclick = () => { CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(); };
-  $("#ccResume")?.addEventListener("click", () => { CC.read = (CC.prior.read_scores || []).slice(); CC.manual = CC.prior.source !== "photo"; drawCompare(); });
+  $("#ccResume")?.addEventListener("click", async () => { CC.read = (CC.prior.read_scores || []).slice(); CC.manual = CC.prior.source !== "photo"; await loadSavedPhoto(); drawCompare(); });
+  $("#ccPhotoView")?.addEventListener("click", async () => { const u = await signedPhoto(CC.prior.image_path); if(u) window.open(u, "_blank", "noopener"); });
   const take = f => f && runRead(f);
   $("#ccCam").onchange = e => take(e.target.files[0]); $("#ccFile").onchange = e => take(e.target.files[0]);
   const d = $("#ccDrop"); d.ondragover = e => { e.preventDefault(); d.style.borderColor = "#1f3d2b"; }; d.ondragleave = () => d.style.borderColor = "";
   d.ondrop = e => { e.preventDefault(); take(e.dataTransfer.files[0]); };
 }
 async function runRead(file){
-  CC.manual = false;
+  CC.manual = false; CC.imagePath = null;
   $("#ccBody").innerHTML = `<div class="ccstatus info" id="ccMsg">Preparing the photo…</div><div class="ccprog" style="margin-top:10px"><i id="ccBar"></i></div><p class="muted" style="font-size:12.5px">The first card can take up to a minute while the model loads; later cards are quicker.</p>`;
   try{
     CC.img = await shrinkImage(file); $("#ccBar").style.width = "15%";
@@ -959,7 +962,15 @@ async function saveCheck(status){
     const up = mism.filter(x => x.card != null).map(x => ({ participant_id: p.id, round, hole: x.hole, strokes: x.card }));
     if(up.length){ const { error } = await supabaseClient.from("hole_scores").upsert(up); if(error) return toast("Couldn't save scores: " + error.message); }
   }
-  const rec = { participant_id: p.id, round, city_id: c.id, source: CC.manual ? "manual" : "photo", status, read_scores: read, mismatches: status === "verified" ? [] : mism, checked_by: meName(), checked_at: new Date().toISOString() };
+  let image_path = CC.imagePath || CC.prior?.image_path || null;
+  if(CC.img && !CC.imagePath){
+    const blob = await (await fetch(CC.img)).blob();
+    const path = `${c.id}/${p.id}-r${round}-${Date.now()}.jpg`;
+    const up = await supabaseClient.storage.from("scorecards").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+    if(up.error) return toast("Couldn't save the card photo: " + up.error.message);
+    image_path = path; CC.imagePath = path;
+  }
+  const rec = { participant_id: p.id, round, city_id: c.id, source: CC.manual && !image_path ? "manual" : CC.manual ? "manual" : "photo", status, read_scores: read, mismatches: status === "verified" ? [] : mism, checked_by: meName(), checked_at: new Date().toISOString(), image_path };
   const { error } = await supabaseClient.from("card_checks").upsert(rec);
   if(error) return toast("Couldn't save the check: " + error.message);
   if(!S.cc.has(c.id)) S.cc.set(c.id, new Map()); S.cc.get(c.id).set(p.id, rec);
