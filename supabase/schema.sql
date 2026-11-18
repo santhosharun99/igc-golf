@@ -120,3 +120,5 @@ create table if not exists public.card_checks (
 );
 alter table public.card_checks enable row level security;
 create policy "staff manage card checks" on public.card_checks for all to authenticated using ((select public.is_staff())) with check ((select public.is_staff()));
+
+alter table public.card_checks add column if not exists signed_name text;

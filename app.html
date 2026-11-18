@@ -476,6 +476,7 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 .rdsteps{display:grid;gap:10px;margin:0 0 12px}.rdsteps>div{display:flex;gap:10px;align-items:flex-start;font-size:14px}.rdsteps .n{flex:0 0 24px;height:24px;border-radius:50%;background:#1f3d2b;color:#fff;display:grid;place-items:center;font-size:12px;font-style:normal;font-weight:700}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid #9aa79c;border-top-color:#1f3d2b;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-1px;margin-right:6px}@keyframes sp{to{transform:rotate(360deg)}}
 .rdsw .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#b9c3b6;margin-right:7px;vertical-align:middle}.rdsw[aria-pressed="true"] .dot{background:#5ee08f;box-shadow:0 0 0 3px rgba(94,224,143,.25)}
+.sigstamp{display:inline-flex;flex-direction:column;gap:1px;margin:8px 0 2px;padding:8px 14px;border:2px solid #1f6b3d;border-radius:8px;color:#1f6b3d;transform:rotate(-1.5deg);background:#f3faf5}.sigstamp.corrected{border-color:#25508f;color:#25508f;background:#f2f6fc}.sigstamp.mismatch{border-color:#b42318;color:#b42318;background:#fff5f4}.sig-k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}.sig-n{font-family:"Brush Script MT","Segoe Script","Snell Roundhand",cursive;font-size:26px;line-height:1.05}.sig-t{font-size:11px;opacity:.8}
 .ccnote{margin-top:14px;background:#f6f8f4;border:1px solid var(--line);border-left:4px solid #b8933a;border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.5}.ccnote .btn{font-size:12.5px;padding:5px 11px}
 .ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
 .csrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.csrow h4{margin:0 0 6px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -806,8 +807,9 @@ const ccOf = pid => { const p = S.players.find(x => x.id === pid); return p ? S.
 function ccPill(pid){
   const k = ccOf(pid); if(!k) return "";
   const n = (k.mismatches || []).length;
-  const t = k.status === "verified" ? ["ok","Verified"] : k.status === "corrected" ? ["fix","Corrected"] : ["bad", `${n} mismatch${n===1?"":"es"}`];
-  return `<button type="button" class="ccp ${t[0]}" data-ccopen="${pid}" title="Checked from ${k.source} by ${esc(k.checked_by||"admin")}">${t[1]}</button>`;
+  const who = k.signed_name ? ` · ${k.signed_name.split(" ")[0]}` : "";
+  const t = k.status === "verified" ? ["ok",`✓ Verified${who}`] : k.status === "corrected" ? ["fix",`✓ Corrected${who}`] : ["bad", `${n} mismatch${n===1?"":"es"}`];
+  return `<button type="button" class="ccp ${t[0]}" data-ccopen="${pid}" title="${k.status==="mismatch"?"Flagged":"Verified"} by ${esc(k.signed_name||k.checked_by||"admin")}">${t[1]}</button>`;
 }
 function ccBanner(cid){
   const m = S.cc.get(cid); if(!m) return "";
@@ -931,6 +933,22 @@ async function ocrRead(dataUrl, p, c, holes){
 }
 function enteredFor(pid, cid, round, holes){ const card = S.ev.get(cid)?.cards.get(pid) || new Map(); return holes.map(h => card.get(`${round}-${h.hole}`) ?? null); }
 const CC = {};
+async function signerName(){
+  if(S.fullName) return S.fullName;
+  const n = (prompt("Your full name, used to sign card checks (saved to your admin login):") || "").trim();
+  if(!n) return null;
+  const { error } = await supabaseClient.auth.updateUser({ data: { full_name: n } });
+  if(error){ toast("Couldn't save your name: " + error.message); return null; }
+  S.fullName = n; return n;
+}
+function stampHTML(k){
+  if(!k) return "";
+  const who = k.signed_name || (k.checked_by && !k.checked_by.includes("@") ? k.checked_by : "");
+  if(!who) return "";
+  const when = new Date(k.checked_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
+  const word = k.status === "verified" ? "Verified" : k.status === "corrected" ? "Corrected &amp; verified" : "Flagged";
+  return `<div class="sigstamp ${k.status}"><span class="sig-k">${word} by</span><span class="sig-n">${esc(who)}</span><span class="sig-t">${when}</span></div>`;
+}
 async function signedPhoto(path){ if(!path) return null; const { data, error } = await supabaseClient.storage.from("scorecards").createSignedUrl(path, 600); if(error){ toast("Couldn't open the card photo: " + error.message); return null; } return data.signedUrl; }
 async function loadSavedPhoto(){ const path = CC.prior?.image_path; if(!path) return; const u = await signedPhoto(path); if(u){ CC.img = u; CC.imagePath = path; } }
 async function openCheck(pid, round = 1){
@@ -952,16 +970,16 @@ async function showSavedCheck(){
   const when = new Date(k.checked_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" });
   const fixed = (k.mismatches || []);
   const hist = `<div class="ccstatus ${k.status === "mismatch" ? "bad" : k.status === "verified" ? "ok" : "info"}">
-    <b>${k.status === "verified" ? "Verified" : k.status === "corrected" ? "Corrected" : "Flagged for manual check"}</b> from ${esc(k.source === "csv" ? "CSV" : k.source)} by ${esc(k.checked_by || "admin")}, ${when}.
+    <b>${k.status === "verified" ? "Verified" : k.status === "corrected" ? "Corrected" : "Flagged for manual check"}</b> from ${esc(k.source === "csv" ? "CSV" : k.source)} by ${esc(k.signed_name || k.checked_by || "admin")}, ${when}.
     ${fixed.length ? `<br>${k.status === "corrected" ? "Changed from the player's entry" : "Didn't match"}: ${fixed.map(x => `hole ${x.hole} (entered ${x.entered ?? "–"} → card ${x.card ?? "?"})`).join(", ")}.` : k.status === "verified" ? " Every hole matched the player's entry." : ""}
     <button class="btn btn-ghost" id="ccNew" style="font-size:12px;padding:3px 9px;margin-left:6px">Check again with a new photo</button></div>`;
-  drawCompare(hist);
+  drawCompare(hist + stampHTML(k));
   $("#ccNew")?.addEventListener("click", () => { CC.img = null; CC.imagePath = null; drawCheckStart(); });
 }
 function drawCheckStart(){
   const { c, prior } = CC, R = c.rounds_count || 1;
   $("#ccBody").innerHTML = `
-    ${prior ? `<div class="ccstatus ${prior.status==="mismatch"?"bad":prior.status==="verified"?"ok":"info"}">Last check: <b>${prior.status==="mismatch"?`${(prior.mismatches||[]).length} mismatched holes`:prior.status}</b> from ${esc(prior.source)} by ${esc(prior.checked_by||"admin")}, ${new Date(prior.checked_at).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}.${prior.status==="mismatch"?` <button class="btn btn-ghost" id="ccResume" style="font-size:12px;padding:3px 9px">Fix those holes</button>`:""}${prior.image_path?` <button class="btn btn-ghost" id="ccPhotoView" style="font-size:12px;padding:3px 9px">View saved card photo</button>`:""}</div>` : ""}
+    ${prior ? `<div class="ccstatus ${prior.status==="mismatch"?"bad":prior.status==="verified"?"ok":"info"}">Last check: <b>${prior.status==="mismatch"?`${(prior.mismatches||[]).length} mismatched holes`:prior.status}</b> from ${esc(prior.source)} by ${esc(prior.signed_name||prior.checked_by||"admin")}, ${new Date(prior.checked_at).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}.${prior.status==="mismatch"?` <button class="btn btn-ghost" id="ccResume" style="font-size:12px;padding:3px 9px">Fix those holes</button>`:""}${prior.image_path?` <button class="btn btn-ghost" id="ccPhotoView" style="font-size:12px;padding:3px 9px">View saved card photo</button>`:""}</div>` : ""}
     ${R > 1 ? `<label class="fld" style="max-width:200px">Round<select id="ccRound">${Array.from({length:R},(_,i)=>`<option value="${i+1}" ${CC.round===i+1?"selected":""}>Round ${i+1}</option>`).join("")}</select></label>` : ""}
     <div class="ccdrop" id="ccDrop">
       <p style="margin:0">Photograph the signed paper card flat, in good light, with the whole card in the frame.</p>
@@ -1101,6 +1119,7 @@ function drawCompare(note = ""){
   render();
 }
 async function saveCheck(status){
+  const signed = await signerName(); if(!signed) return toast("Enter your name to sign this check");
   const { p, c, holes, round, read } = CC, entered = enteredFor(p.id, c.id, round, holes);
   const mism = holes.map((h,i) => ({ hole: h.hole, entered: entered[i], card: read[i] })).filter(x => x.entered !== x.card);
   if(status === "corrected"){
@@ -1115,7 +1134,7 @@ async function saveCheck(status){
     if(up.error) return toast("Couldn't save the card photo: " + up.error.message);
     image_path = path; CC.imagePath = path;
   }
-  const rec = { participant_id: p.id, round, city_id: c.id, source: CC.manual && !image_path ? "manual" : CC.manual ? "manual" : "photo", status, read_scores: read, mismatches: status === "verified" ? [] : mism, checked_by: meName(), checked_at: new Date().toISOString(), image_path };
+  const rec = { participant_id: p.id, round, city_id: c.id, source: CC.manual && !image_path ? "manual" : CC.manual ? "manual" : "photo", status, read_scores: read, mismatches: status === "verified" ? [] : mism, checked_by: S.email || meName(), signed_name: signed, checked_at: new Date().toISOString(), image_path };
   const { error } = await supabaseClient.from("card_checks").upsert(rec);
   if(error) return toast("Couldn't save the check: " + error.message);
   if(!S.cc.has(c.id)) S.cc.set(c.id, new Map()); S.cc.get(c.id).set(p.id, rec);
@@ -1191,13 +1210,14 @@ function csDraw(){
   $("#csApply").onclick = () => csApply(true);
 }
 async function csApply(fix){
-  const { c } = CS, R = CS.rows.filter(r => r.p), now = new Date().toISOString(), me = meName();
+  const signed = await signerName(); if(!signed) return toast("Enter your name to sign these checks");
+  const { c } = CS, R = CS.rows.filter(r => r.p), now = new Date().toISOString(), me = S.email || meName();
   const hs = [], recs = [];
   R.forEach(r => {
     const doFix = fix && r.use && r.mism.length;
     if(doFix) r.mism.forEach(x => hs.push({ participant_id: r.p.id, round: r.round, hole: x.hole, strokes: x.card }));
     recs.push({ participant_id: r.p.id, round: r.round, city_id: c.id, source: "csv", status: !r.mism.length ? "verified" : doFix ? "corrected" : "mismatch",
-      read_scores: r.card, mismatches: r.mism, checked_by: me, checked_at: now });
+      read_scores: r.card, mismatches: r.mism, checked_by: me, signed_name: signed, checked_at: now });
   });
   for(let i = 0; i < hs.length; i += 400){ const { error } = await supabaseClient.from("hole_scores").upsert(hs.slice(i, i+400)); if(error) return toast("Couldn't save scores: " + error.message); }
   for(let i = 0; i < recs.length; i += 400){ const { error } = await supabaseClient.from("card_checks").upsert(recs.slice(i, i+400)); if(error) return toast("Couldn't save checks: " + error.message); }
@@ -2281,7 +2301,7 @@ async function startApp(){
   try{
     const { data:{ session }, error } = await supabaseClient.auth.getSession();
     if(error || !session) return showAuth(error?.message || "");
-    S.email = session.user.email || "";
+    S.email = session.user.email || ""; S.fullName = (session.user.user_metadata?.full_name || "").trim();
     $("#authGate").classList.add("hidden"); $("#app").classList.remove("hidden"); $("#loading").classList.remove("hidden");
     VIEWS.forEach(x => $("#v-"+x).classList.add("hidden"));
     try{ await loadLive(); }
