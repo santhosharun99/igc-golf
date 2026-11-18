@@ -6,7 +6,14 @@ echo == IGC Card Reader installer ==
 set "ORIGINS=https://santhosharun99.github.io,http://localhost:*,http://127.0.0.1:*"
 set "OLLAMA=ollama"
 where ollama >nul 2>&1 || set "OLLAMA=%LOCALAPPDATA%\Programs\Ollama\ollama.exe"
-if not "%OLLAMA%"=="ollama" if not exist "%OLLAMA%" ( echo Ollama is not installed. Download it from https://ollama.com, open it once, then run this again. & pause & exit /b 1 )
+if not "%OLLAMA%"=="ollama" if not exist "%OLLAMA%" (
+  echo Installing Ollama, free, one time...
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "irm https://ollama.com/install.ps1 | iex"
+  if not exist "%LOCALAPPDATA%\Programs\Ollama\ollama.exe" (
+    powershell -NoProfile -Command "Invoke-WebRequest https://ollama.com/download/OllamaSetup.exe -OutFile $env:TEMP\OllamaSetup.exe" && "%TEMP%\OllamaSetup.exe" /SILENT
+  )
+  if not exist "%LOCALAPPDATA%\Programs\Ollama\ollama.exe" ( echo Couldn't install Ollama automatically. Install it from https://ollama.com, then run this again. & pause & exit /b 1 )
+)
 
 set "DIR=%LOCALAPPDATA%\IGC"
 mkdir "%DIR%" >nul 2>&1

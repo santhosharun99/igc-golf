@@ -473,6 +473,8 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 .ccsum{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}.ccsum .big{font-size:18px;font-weight:800}
 .ccstatus{padding:10px 12px;border-radius:9px;font-size:14px}.ccstatus.ok{background:#e3f3e8;color:#1f6b3d}.ccstatus.bad{background:#fde4e1;color:#9b1c13}.ccstatus.info{background:#eef2f7;color:#334}
 .ccpick{position:relative;max-height:68vh;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:10px}.ccpick img{width:100%;display:block;cursor:crosshair}.ccband{position:absolute;left:0;right:0;background:rgba(31,61,43,.18);border-top:2px solid #1f3d2b;border-bottom:2px solid #1f3d2b;pointer-events:none}
+.rdsteps{display:grid;gap:10px;margin:0 0 12px}.rdsteps>div{display:flex;gap:10px;align-items:flex-start;font-size:14px}.rdsteps .n{flex:0 0 24px;height:24px;border-radius:50%;background:#1f3d2b;color:#fff;display:grid;place-items:center;font-size:12px;font-style:normal;font-weight:700}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid #9aa79c;border-top-color:#1f3d2b;border-radius:50%;animation:sp 1s linear infinite;vertical-align:-1px;margin-right:6px}@keyframes sp{to{transform:rotate(360deg)}}
 .rdsw .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#b9c3b6;margin-right:7px;vertical-align:middle}.rdsw[aria-pressed="true"] .dot{background:#5ee08f;box-shadow:0 0 0 3px rgba(94,224,143,.25)}
 .ccnote{margin-top:14px;background:#f6f8f4;border:1px solid var(--line);border-left:4px solid #b8933a;border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.5}.ccnote .btn{font-size:12.5px;padding:5px 11px}
 .ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
@@ -781,8 +783,8 @@ function renderScores(){
     if(OCR.on){ OCR.on = false; renderScores(); toast("Card reader off: cards will be typed in by hand"); return; }
     OCR.on = true; renderScores(); toast("Starting the card reader on this laptop…");
     const r = await ensureReader(true);
-    toast(r.ok ? "Card reader is on and ready" : "Card reader didn't start: " + r.why);
-    if(!r.ok){ OCR.on = false; renderScores(); openReaderHelp(r.why); }
+    if(r.ok) toast("Card reader is on and ready");
+    if(!r.ok){ OCR.on = false; renderScores(); openReaderHelp(r.why, () => { renderScores(); toast("Card reader is on and ready"); }); }
   });
   if(!S.cc.has(c.id)) loadChecks(c.id).then(() => { if(S.sCity === c.id && document.querySelector("#v-scores .h-row")) renderScores(); });
   $("#sCsv").addEventListener("click", () => exportCSV([c]));
@@ -830,23 +832,43 @@ async function ensureReader(launch){
   if(!launch) return r;
   OCR.set(LOCAL_READER, OCR.model);
   launchReader();
-  for(let i = 0; i < 45; i++){ await new Promise(z => setTimeout(z, 1000)); r = await ocrPing(); if(r.ok) return r; }
+  for(let i = 0; i < 10; i++){ await new Promise(z => setTimeout(z, 1000)); r = await ocrPing(); if(r.ok) return r; }
   return { ok: false, why: "the card reader isn't installed on this laptop, or the browser blocked it from opening" };
 }
-function openReaderHelp(why){
+function openReaderHelp(why, onLive){
+  const win = /Windows/i.test(navigator.userAgent), mac = /Macintosh|Mac OS X/i.test(navigator.userAgent) && !/iPhone|iPad/i.test(navigator.userAgent);
+  const file = win ? "docs/install-card-reader-windows.bat" : "docs/install-card-reader-mac.command";
   const box = $("#ocBody");
-  box.innerHTML = `<div class="ckdlg-title">Set up the card reader on this laptop</div>
-    <div class="ccstatus bad">${esc(why)}.</div>
-    <p style="font-size:14px;margin:10px 0 6px"><b>One time per laptop</b> (about 20 minutes, mostly the 6 GB model download):</p>
-    <ol style="font-size:14px;margin:0 0 8px;padding-left:20px;line-height:1.6">
-      <li>Install <b>Ollama</b> from <a href="https://ollama.com" target="_blank" rel="noopener">ollama.com</a> and open it once.</li>
-      <li>Download and run the installer for this laptop: <a href="docs/install-card-reader-mac.command" download>Mac installer</a> · <a href="docs/install-card-reader-windows.bat" download>Windows installer</a>.<br><span class="muted" style="font-size:12.5px">Mac: right-click it → Open the first time. Windows: More info → Run anyway.</span></li>
-      <li>Come back and switch <b>Card reader: On</b>. When the browser asks to open <b>IGC Card Reader</b>, tick <b>Always allow</b>.</li>
-    </ol>
-    <p class="muted" style="font-size:12.5px">After that, the switch (or uploading a card photo) starts the reader automatically. Full steps: <a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a>.</p>
+  box.innerHTML = `<div class="ckdlg-title">Turn on the card reader on this laptop</div>
+    <p style="font-size:14px;margin:4px 0 12px">The card reader isn't running on this ${win ? "Windows laptop" : mac ? "Mac" : "device"} yet. One file sets up everything (Ollama, the card-reading model and the start link), then starts it.</p>
+    ${!win && !mac ? `<div class="ccstatus bad">Phones and tablets can't run the card reader. Use a Mac or Windows laptop, or type cards in by hand.</div>` : `
+    <div class="rdsteps">
+      <div><i class="n">1</i><span><a class="btn btn-primary" href="${file}" download>Download ${win ? "installer for Windows" : "installer for Mac"}</a></span></div>
+      <div><i class="n">2</i><span>${win ? "Open it from Downloads. If Windows says <i>protected your PC</i>, click <b>More info → Run anyway</b>." : "In Downloads, <b>right-click</b> the file → <b>Open</b> → <b>Open</b> (first time only)."}</span></div>
+      <div><i class="n">3</i><span>Leave this page open. The first setup downloads the model (about 6 GB, once), so it can take a while; on a laptop that already has it, about a minute.</span></div>
+    </div>
+    <div class="ccstatus info" id="rdWait"><span class="spin"></span> Waiting for the card reader to come online… this switches on by itself.</div>`}
+    <p class="muted" style="font-size:12.5px;margin:10px 0 0">${win ? `<a href="docs/install-card-reader-mac.command" download>Mac installer</a>` : `<a href="docs/install-card-reader-windows.bat" download>Windows installer</a>`} · <a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="#" id="rdAdv">Advanced settings</a></p>
     <div class="ckdlg-actions"><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
-  $("#ocClose").onclick = () => $("#ocDialog").close();
+  let stop = false;
+  const close = () => { stop = true; $("#ocDialog").close(); };
+  $("#ocClose").onclick = close;
+  $("#rdAdv").onclick = e => { e.preventDefault(); stop = true; openOcrSettings(); };
+  $("#ocDialog").addEventListener("close", () => { stop = true; }, { once: true });
   if(!$("#ocDialog").open) $("#ocDialog").showModal();
+  if(!win && !mac) return;
+  OCR.set(LOCAL_READER, OCR.model);
+  (async () => {
+    let tries = 0;
+    while(!stop){
+      const r = await ocrPing();
+      if(stop) return;
+      if(r.ok){ $("#rdWait").outerHTML = `<div class="ccstatus ok"><b>✓ Card reader is live.</b> Switched on.</div>`; OCR.on = true; setTimeout(() => { if(!stop){ close(); onLive && onLive(); } }, 1200); return; }
+      if(++tries % 10 === 0) launchReader();
+      const el = $("#rdWait"); if(el && /isn't downloaded/.test(r.why || "")) el.innerHTML = `<span class="spin"></span> Reader started, still downloading the model… this switches on by itself.`;
+      await new Promise(z => setTimeout(z, 3000));
+    }
+  })();
 }
 async function ocrPing(){
   try{ const r = await fetch(OCR.url + "/api/tags", { signal: AbortSignal.timeout(4000) }); if(!r.ok) return { ok:false, why:`reader answered ${r.status}` };
