@@ -931,10 +931,18 @@ async function readRowAt(fy){
   $("#ccBody").innerHTML = `<div class="ccstatus info" id="ccMsg">Reading that row with ${esc(OCR.model)}…</div><div class="ccprog" style="margin-top:10px"><i id="ccBar" style="width:20%"></i></div><p class="muted" style="font-size:12.5px">Usually 5–20 seconds; the first card after starting the reader can take up to a minute.</p>`;
   const tick = setInterval(() => { const b = $("#ccBar"); if(b) b.style.width = Math.min(92, parseFloat(b.style.width) + 5) + "%"; }, 1200);
   try{
-    const strip = await cropStrip(CC.img, fy);
-    const out = await ocrReadStrip(strip, CC.holes.length);
-    CC.read = out.scores; CC.name = out.name || "";
-    const got = out.scores.filter(v => v != null).length;
+    const n = CC.holes.length, nines = n > 9 ? [9, n - 9] : [n];
+    const best = nines.map(() => null); let name = "";
+    const tries = [[0, 0.045], [-0.008, 0.05], [0.008, 0.04], [0, 0.06]];
+    for(const [dy, half] of tries){
+      const out = await ocrReadStrip(await cropStrip(CC.img, fy + dy, half), n);
+      if(!name && out.name) name = out.name;
+      out.groups.forEach((g, k) => { if(!best[k] && g.length === nines[k]) best[k] = g; });
+      if(best.every(Boolean)) break;
+      $("#ccMsg").textContent = "Double-checking the row…";
+    }
+    CC.read = best.flatMap((g, k) => g ? g : Array(nines[k]).fill(null)); CC.name = name;
+    const got = CC.read.filter(v => v != null).length;
     drawCompare(got ? "" : `<div class="ccstatus bad">Couldn't read digits in that row. <button class="btn btn-ghost" id="ccRepick" style="font-size:12px;padding:3px 9px">Tap the row again</button> or type the scores from the photo.</div>`);
   }catch(e){ CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(`<div class="ccstatus bad">Couldn't read the card: ${esc(e.message)}. Type the scores from the photo.</div>`); }
   finally{ clearInterval(tick); }
@@ -951,10 +959,8 @@ async function ocrReadStrip(dataUrl, n){
   const txt = ((await r.json()).message?.content || "").replace(/```\w*/g, "").trim();
   const parts = txt.split("|").map(x => x.trim());
   const digits = t => (t.match(/\d+|\?/g) || []).flatMap(x => x === "?" ? [null] : (x.length > 1 && x.length <= 2 && +x <= 15 ? [+x] : x.split("").map(Number))).map(v => v == null || v < 1 ? null : v);
-  let scores;
-  if(nine && parts.length >= 3){ const a = digits(parts[1]), b = digits(parts[2]); scores = [...pad(a, 9), ...pad(b, n - 9)]; }
-  else { scores = pad(digits(parts.slice(1).join(" ")), n); }
-  return { name: parts.length > 1 ? parts[0] : "", scores, raw: txt };
+  const groups = nine && parts.length >= 3 ? [digits(parts[1]), digits(parts[2])] : [digits(parts.slice(1).join(" "))];
+  return { name: parts.length > 1 ? parts[0] : "", groups, raw: txt };
 }
 const pad = (a, n) => { const x = a.slice(0, n); while(x.length < n) x.push(null); return x; };
 function drawCompare(note = ""){
