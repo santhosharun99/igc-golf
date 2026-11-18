@@ -473,6 +473,7 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 .ccsum{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}.ccsum .big{font-size:18px;font-weight:800}
 .ccstatus{padding:10px 12px;border-radius:9px;font-size:14px}.ccstatus.ok{background:#e3f3e8;color:#1f6b3d}.ccstatus.bad{background:#fde4e1;color:#9b1c13}.ccstatus.info{background:#eef2f7;color:#334}
 .ccpick{position:relative;max-height:68vh;overflow:auto;border:1px solid var(--line);border-radius:8px;margin-top:10px}.ccpick img{width:100%;display:block;cursor:crosshair}.ccband{position:absolute;left:0;right:0;background:rgba(31,61,43,.18);border-top:2px solid #1f3d2b;border-bottom:2px solid #1f3d2b;pointer-events:none}
+.ccnote{margin-top:14px;background:#f6f8f4;border:1px solid var(--line);border-left:4px solid #b8933a;border-radius:9px;padding:12px 14px;font-size:13px;line-height:1.5}.ccnote .btn{font-size:12.5px;padding:5px 11px}
 .ccprog{height:6px;background:#e7ece5;border-radius:9px;overflow:hidden}.ccprog i{display:block;height:100%;background:#1f3d2b;width:0;transition:width .4s}
 .csrow{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px}.csrow h4{margin:0 0 6px;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 @media (max-width:860px){.ccgrid{grid-template-columns:1fr}.ccimg{position:static}}
@@ -831,6 +832,7 @@ function openOcrSettings(){
     <label class="fld">Vision model<input id="ocModel" value="${esc(OCR.model)}" list="ocModels"></label>
     <datalist id="ocModels"><option value="qwen2.5vl:7b"><option value="qwen2.5vl:3b"><option value="qwen3-vl:8b"></datalist>
     <div id="ocStat" class="ccstatus info">Checking…</div>
+    <p style="font-size:13px;margin:6px 0"><a href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a> · <a href="docs/start-card-reader.command" download>Download start script (Mac)</a></p>
     <div class="ckdlg-actions"><button class="btn btn-primary" id="ocSave">Save &amp; test</button><button class="btn btn-ghost" id="ocClose">Close</button></div>`;
   const test = async () => { const r = await ocrPing(); $("#ocStat").outerHTML = r.ok ? `<div id="ocStat" class="ccstatus ok">Connected · ${esc(OCR.model)} is ready.</div>` : `<div id="ocStat">${ocrHelp(r.why)}</div>`; };
   $("#ocSave").onclick = () => { OCR.set($("#ocUrl").value.trim().replace(/\/$/,""), $("#ocModel").value.trim()); test(); };
@@ -900,11 +902,18 @@ function drawCheckStart(){
       <div class="row"><label class="btn btn-primary">Open camera<input type="file" accept="image/*" capture="environment" id="ccCam" hidden></label>
         <label class="btn btn-ghost">Upload photo<input type="file" accept="image/*" id="ccFile" hidden></label>
         <button class="btn btn-ghost" id="ccManual">Type the card in by hand</button></div>
-      <p class="muted" style="margin:0;font-size:12.5px">or drop a photo here · read on this computer by ${esc(OCR.model)}</p>
+      <p class="muted" style="margin:0;font-size:12.5px">or drop a photo here</p>
     </div>
+    <div class="ccnote" id="ccNote"><b>To read cards automatically, the card reader must be running on a laptop.</b>
+      It needs <b>Ollama</b> with the <b>${esc(OCR.model)}</b> model and the <b>start-card-reader</b> script (which opens a secure link) running on that laptop, with its address saved in <b>Scores → Card reader</b>.
+      Without it you can still type the card in by hand.
+      <span id="ccNoteStat" class="muted">Checking the reader…</span>
+      <div class="row" style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn btn-ghost" href="docs/card-reader-setup.pdf" target="_blank" rel="noopener">Setup guide (PDF)</a><a class="btn btn-ghost" href="docs/start-card-reader.command" download>Download start script (Mac)</a><button class="btn btn-ghost" id="ccSettings">Card reader settings</button></div></div>
     <div class="ckdlg-actions"><button class="btn btn-ghost" id="ccCancel">Close</button></div>`;
   $("#ccRound")?.addEventListener("change", e => { CC.round = +e.target.value; });
   $("#ccCancel").onclick = () => $("#ccDialog").close();
+  $("#ccSettings").onclick = () => { $("#ccDialog").close(); openOcrSettings(); };
+  ocrPing().then(r => { const el = $("#ccNoteStat"); if(el) el.innerHTML = r.ok ? `<b style="color:#1f6b3d">✓ Reader connected</b> (${esc(OCR.url)}).` : `<b style="color:#b42318">✗ Reader not reachable</b>: ${esc(r.why)}.`; });
   $("#ccManual").onclick = () => { CC.read = CC.holes.map(() => null); CC.manual = true; drawCompare(); };
   $("#ccResume")?.addEventListener("click", async () => { CC.read = (CC.prior.read_scores || []).slice(); CC.manual = CC.prior.source !== "photo"; await loadSavedPhoto(); drawCompare(); });
   $("#ccPhotoView")?.addEventListener("click", async () => { const u = await signedPhoto(CC.prior.image_path); if(u) window.open(u, "_blank", "noopener"); });
