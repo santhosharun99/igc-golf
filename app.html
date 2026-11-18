@@ -448,7 +448,7 @@ nav.tabs a{border-radius:8px}.seg button,.mtog,.optcards button,.phases button{b
 dialog.ckdlg.spdlg{width:min(1000px,96vw);max-height:90vh}
 .spwrap{padding:20px 22px;display:grid;gap:12px}
 .sptab{width:100%;border-collapse:collapse;font-size:14px}.sptab th{text-align:left;font-size:12px;color:#fff;font-weight:600;padding:6px}
-.sptab td{padding:4px 6px;vertical-align:top}.sptab input,.sptab textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:7px;padding:7px 8px;font:inherit}
+.sptab td{padding:4px 6px;vertical-align:top}.sptab select{width:100%;border:1px solid var(--line);border-radius:7px;padding:7px 8px;font:inherit;background:#fff}.sptab input,.sptab textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:7px;padding:7px 8px;font:inherit}
 .sptab textarea{min-height:36px;resize:vertical}.sptab .amt{width:130px;text-align:right}
 .sptot{display:flex;gap:18px;flex-wrap:wrap;font-size:14px}.sptot b{font-size:18px}
 @media (max-width:700px){.sptab thead{display:none}.sptab tr{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 0;border-bottom:1px solid var(--line)}.sptab td{padding:0}.sptab td.n{grid-column:1/-1}.sptab .amt{width:100%}}
@@ -1225,6 +1225,18 @@ async function openSponsors(cid){
   if(error){ $("#spBody").innerHTML = `<p class="prob">${esc(error.message)}</p>`; return; }
   SP.rows = data || []; drawSponsors();
 }
+const SP_ROLES = ["Title sponsor","Presented by","Powered by","Partnered by","Associate sponsor","Hospitality partner","Beverage partner","Hole sponsor","Prize sponsor","Media partner"];
+function spRoleSel(r){
+  const all = [...SP_ROLES, ...new Set(SP.rows.map(x => x.role).filter(x => x && !SP_ROLES.includes(x)))];
+  return `<select class="sprole" aria-label="Role"><option value="">Choose role…</option>${all.map(x => `<option ${x===r.role?"selected":""}>${esc(x)}</option>`).join("")}<option value="__custom">+ Custom role…</option></select>`;
+}
+function spRefresh(){
+  const tt = $("#spBody .sptot"); if(tt) tt.outerHTML = spTotals();
+  $("#spBody").querySelectorAll("tr[data-id] select.sprole").forEach(sel => {
+    const r = SP.rows.find(x => x.id === +sel.closest("tr").dataset.id), t = document.createElement("div"); t.innerHTML = spRoleSel(r);
+    sel.innerHTML = t.firstChild.innerHTML; sel.value = r.role || "";
+  });
+}
 function spTotals(){
   const R = SP.rows, tot = R.reduce((a, r) => a + (+r.amount || 0), 0);
   const byRole = {}; R.forEach(r => { const k = r.role || "No role"; byRole[k] = (byRole[k] || 0) + (+r.amount || 0); });
@@ -1235,7 +1247,7 @@ function drawSponsors(){
   $("#spBody").innerHTML = R.length ? `${spTotals()}
     <table class="sptab"><thead><tr><th>Company</th><th>Role</th><th>Value (₹)</th><th>Notes / special requirements</th><th></th></tr></thead><tbody>
     ${R.map(r => `<tr data-id="${r.id}"><td><input data-f="company" value="${esc(r.company||"")}" placeholder="Company name" aria-label="Company"></td>
-      <td><input data-f="role" list="spRoles" value="${esc(r.role||"")}" placeholder="e.g. Title sponsor" aria-label="Role"></td>
+      <td>${spRoleSel(r)}</td>
       <td><input data-f="amount" class="amt" type="number" min="0" step="1000" value="${r.amount ?? ""}" placeholder="0" aria-label="Value in rupees"></td>
       <td class="n"><textarea data-f="note" placeholder="e.g. Hospitality required, 4 player slots, branding at hole 1" aria-label="Notes">${esc(r.note||"")}</textarea></td>
       <td><button type="button" class="del" aria-label="Remove sponsor">×</button> <span class="ok"></span></td></tr>`).join("")}</tbody></table>`
@@ -1253,6 +1265,22 @@ function drawSponsors(){
         r[f] = v; ok.textContent = "✓"; const tt = $("#spBody .sptot"); if(tt) tt.outerHTML = spTotals();
       }, 600);
     }); });
+    const saveRole = async v => {
+      const { error } = await supabaseClient.from("sponsors").update({ role: v || null, updated_by: meName(), updated_at: new Date().toISOString() }).eq("id", id);
+      if(error){ ok.textContent = "!"; ok.title = error.message; return false; }
+      r.role = v || null; return true;
+    };
+    const wireRole = () => { const sel = tr.querySelector(".sprole"); sel.addEventListener("change", async () => {
+      if(sel.value !== "__custom"){ if(await saveRole(sel.value)){ ok.textContent = "✓"; spRefresh(); } return; }
+      const inp = document.createElement("input"); inp.placeholder = "Type the role, then Enter"; inp.setAttribute("aria-label", "Custom role");
+      sel.replaceWith(inp); inp.focus();
+      let done = false;
+      const back = () => { const t = document.createElement("div"); t.innerHTML = spRoleSel(r); inp.replaceWith(t.firstChild); wireRole(); spRefresh(); };
+      const fin = async () => { if(done) return; done = true; const v = inp.value.trim(); if(v && await saveRole(v)) ok.textContent = "✓"; back(); };
+      inp.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); fin(); } if(e.key === "Escape"){ done = true; back(); } });
+      inp.addEventListener("blur", fin);
+    }); };
+    wireRole();
     tr.querySelector(".del").addEventListener("click", async e => {
       const b = e.currentTarget;
       if(!b.classList.contains("armed")){ b.classList.add("armed"); b.textContent = "Delete?"; setTimeout(() => { if(b.isConnected){ b.classList.remove("armed"); b.textContent = "×"; } }, 3000); return; }
