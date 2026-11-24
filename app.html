@@ -484,6 +484,8 @@ dialog.ckdlg.ccdlg{width:min(1180px,97vw)}
 @media (max-width:860px){.ccgrid{grid-template-columns:1fr}.ccimg{position:static}}
 .brand>span{white-space:nowrap}@media(max-width:1180px){.brand small{display:none}}@media(max-width:1000px){.brand b{display:none}}
 .isl{height:30px;width:auto;flex:none;background:#fff;border-radius:7px;padding:3px 6px;box-sizing:content-box;border:1px solid rgba(0,0,0,.06)}</style>
+<link rel="stylesheet" href="theme.css">
+<script src="slide.js" defer></script>
 </head>
 <body>
 
@@ -749,13 +751,12 @@ function renderScores(){
   const v = $("#v-scores");
   v.innerHTML = `
     <div class="h-row"><h2>Scores</h2><span class="sub">Live from players' cards · click a player for the hole-by-hole card</span></div><div class="hr"></div>
-    <div class="toolbar"><div class="chips" id="sChips">${chipsHTML(S.sCity,false)}</div><span class="spacer"></span>
-      <button class="btn btn-ghost" id="sRefresh">Refresh</button>
-      <button class="btn btn-ghost" id="sCsvCheck">Cross-check CSV</button>
-      <button class="btn ${OCR.on ? "btn-primary" : "btn-ghost"} rdsw" id="sOcrOn" aria-pressed="${OCR.on}" title="Read paper cards automatically with the card reader on this laptop"><span class="dot"></span>Card reader: ${OCR.on ? "On" : "Off"}</button>
-      <button class="btn btn-ghost" id="sOcrSet" title="Card reader settings" aria-label="Card reader settings">⚙</button>
-      <button class="btn btn-ghost" id="sCsv" ${rows.length?"":"disabled"}>Export CSV · ${esc(c.name)}</button>
-      <button class="btn btn-primary" id="sCsvAll">Export CSV · all events</button></div>
+    <div class="toolbar"><div class="chips" id="sChips">${chipsHTML(S.sCity,false)}</div></div>
+      <div class="tgroups">
+        <div class="tgroup"><span class="tg-l">General</span><button class="btn btn-ghost" id="sRefresh">Refresh</button></div>
+        <div class="tgroup check"><span class="tg-l">Paper card checks</span><button class="btn ${OCR.on ? "btn-primary" : "btn-ghost"} rdsw" id="sOcrOn" aria-pressed="${OCR.on}" title="Read paper cards automatically with the card reader on this laptop"><span class="dot"></span>Card reader: ${OCR.on ? "On" : "Off"}</button><button class="btn btn-ghost" id="sOcrSet" title="Card reader settings" aria-label="Card reader settings">⚙</button><button class="btn btn-ghost" id="sCsvCheck">Cross-check CSV</button></div>
+        <div class="tgroup export"><span class="tg-l">Export</span><button class="btn btn-ghost" id="sCsv" ${rows.length?"":"disabled"}>Export CSV · ${esc(c.name)}</button><button class="btn btn-primary" id="sCsvAll">Export CSV · all events</button></div>
+      </div>
     <div class="method">
       <div class="mcard"><div class="tag">Format · ${esc(c.name)}</div><h3>${esc(G.LABELS.scoring[f.scoring])}${f.scoring!=="parbogey"&&f.handicap!=="none"?` · ${f.basis==="net"?"Net":"Gross"}`:""}</h3>
         <p>${G.explain(f, holes.length || c.holes_count || 18, R).join(" ")}</p></div>
