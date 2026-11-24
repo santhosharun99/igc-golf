@@ -79,7 +79,7 @@ footer{text-align:center;padding:30px;color:var(--muted);font-size:12px}
   .beat p{font-size:15.5px;color:#3d4f3f}
   .cities span{border-radius:6px;background:#fff;font-size:12px;padding:5px 9px}
   .cta{display:grid;grid-template-columns:1fr;gap:8px}.cta .btn{text-align:center;padding:14px}
-  .veil{background:linear-gradient(180deg,rgba(181,212,214,.0) 0%,rgba(71,86,104,0) 100%)!important}
+  .veil{background:linear-gradient(180deg,rgba(181,212,214,.0) 0%,rgba(238,216,180,0) 100%)!important}
   .hint{bottom:18px}
   .tour{padding:56px 18px 40px}.grid{grid-template-columns:1fr 1fr;gap:8px}
   .stop{border-radius:8px;padding:12px}.stop .c{font-size:17px}
@@ -168,10 +168,10 @@ function draw(i){
     const bandH = cv.height * 0.62, s = Math.max(bandH / ih, cv.width / iw), w = iw * s, h = ih * s;
     let x = cv.width / 2 - w * 0.68; x = Math.min(0, Math.max(cv.width - w, x));
     const y = cv.height - h;
-    ctx.fillStyle = "#475668"; ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.fillStyle = "#EED8B4"; ctx.fillRect(0, 0, cv.width, cv.height);
     ctx.drawImage(im, x, y, w, h);
     const g = ctx.createLinearGradient(0, y, 0, y + cv.height * 0.12);
-    g.addColorStop(0, "#475668"); g.addColorStop(1, "rgba(71,86,104,0)");
+    g.addColorStop(0, "#EED8B4"); g.addColorStop(1, "rgba(238,216,180,0)");
     ctx.fillStyle = g; ctx.fillRect(0, y, cv.width, cv.height * 0.12);
     return;
   }
